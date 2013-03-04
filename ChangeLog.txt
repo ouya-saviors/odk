@@ -1,0 +1,68 @@
+ODK 1.0.0 - Mar 4, 2013
+========================
+-Made it easier for developers to check what button states change each frame
+-Added action to allow apps to intent filter for detecting when the system menu is opening.
+
+ODK 0.0.7 - Feb 22, 2013
+========================
+-Added isRunningOnOUYAHardware to OUYAFacade to allow developers to test for OUYA hardware
+-Added menu button to OuyaController
+-Controller LEDs correctly represent player number (as per OuyaController.getControllerByPlayer)
+-Fix log-in issues when running on an emulator
+
+ODK 0.0.6 - Feb 4, 2013
+========================
+-The method signature of decryptReceiptResponse has changed to allow for receipt encryption. Please use parseJSONReceiptResponse instead until encrypted receipts are available.
+-Changed the OUYA intents to have a "tv." at the front.  The new intents are: tv.ouya.intent.category.APP or tv.ouya.intent.category.GAME
+-Fixed a bug where the controller 'anytime state querying' wasn't working for some buttons/axes
+-Removed a bunch of auto-boxing within the OuyaController class
+
+ODK 0.0.5 - Jan 9, 2013
+========================
+-Included an updated framework apk
+-Resolved a purchasing issue
+-Made the "Expire Current Token" menu option work
+-Test "always decilned" products are once again correctly declined
+-Added a proper OUYA icon for game-sample
+-Force US locale when using NumberFormat.getCurrencyInstance
+
+OUYA Unity package:
+- Build and Run in the OUYA panel recognize the build settings for selected scenes, development checkbox, and script debugging.
+- Event driven controller input
+- Multiple controller support
+- SceneMultipleControllers supports multiple controllers on characters
+
+ODK 0.0.4 - Dec 28, 2012
+========================
+-TONS of OUYA Launcher work
+-Updated OUYA SDK Unity Package doc with examples and script documentation (OUYA-ODK/Documentation/OUYA SDK Unity Package.pdf)
+-OUYA SDK Unity Package, added virtual model to controller example scene
+-OUYA SDK Unity Package, added NDK example
+-OUYA SDK Unity Package, added NDK tab to OUYA Panel and C++ compiling support on Mac/Windows
+-OUYA SDK Unity Package, reexported with Unity 3.5.0
+-Added Interface Guidelines documentation
+-Updated Build Environment Setup doc with OUYA application image information
+-Button names for LB/LT/LTHUMB are now L1/L2/L3 (same with R_)
+-LSTICK and RSTICK axes are now referred to as LS and RS
+
+ODK 0.0.3 - Nov 20, 2012
+========================
+-Changed OuyaFacade to be a singleton (use getInstance)
+-OuyaController now has helper methods for querying the controller state at any time (need to pass key & motion events to onKeyEventUp/onKeyEventDown/onGenericMotionEvent in OuyaController)
+-New OuyaController doc (OUYA-ODK/Documentation/Controllers.pdf)
+-Added "ouya-controller-testapp" project
+-Added "game-sample" project for a more real-life integration example (OUYA-ODK/Samples/game-sample)
+-Added OUYA SDK Unity Package (OUYA-ODK/Packages/Unity)
+-New OUYA SDK Unity Package doc (OUYA-ODK/Documentation/OUYA SDK Unity Package.pdf)
+-Added GAME and APP Intent categories, which allow your games and apps to show up on the Games and Apps screens.
+
+ODK 0.0.2 - Nov 13, 2012
+========================
+-Rename iap-sample-app apk (OuyaAndroid -> iap-sample-app)
+-Made iap-sample-app not crash on start-up
+-Changed base directory to "OUYA-ODK"
+-Removed dependency on Guice and RoboGuice
+
+ODK 0.0.1 - Nov 12, 2012
+=======================
+-Initial release.
