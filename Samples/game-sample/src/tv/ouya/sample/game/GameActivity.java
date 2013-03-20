@@ -47,6 +47,12 @@ public class GameActivity extends Activity {
         players = new Player[4];
         for(int i = 0; i < 4; ++i) {
             players[i] = new Player(i);
+
+            // Show ships for controllers that are currently connected
+            OuyaController ouyaController = OuyaController.getControllerByPlayer(i);
+            if (ouyaController != null) {
+                findOrCreatePlayer(ouyaController.getDeviceId());
+            }
         }
 
         switch (Options.getInstance().getLevel()) {

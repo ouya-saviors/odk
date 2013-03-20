@@ -361,7 +361,7 @@ public class OptionsActivity extends Activity {
             @Override
             public void onFailure(int errorCode, String errorMessage, Bundle optionalData) {
                 levelToRadioButton.get(FREEDOM).setChecked(true);
-                Toast.makeText(OptionsActivity.this, "Error making purchase!\n\nError " + errorCode + ": " + errorMessage + ")", Toast.LENGTH_LONG).show();
+                Toast.makeText(OptionsActivity.this, "Error making purchase!\n\nError " + errorCode + "\n" + errorMessage + ")", Toast.LENGTH_LONG).show();
 
             }
 

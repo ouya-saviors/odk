@@ -1,5 +1,9 @@
-ODK 1.0.0 - Mar 4, 2013
+ODK 1.x.x - ??? ??, 2013
 ========================
+- The console USB VID/PID has changed. Please see https://github.com/ouya/docs/blob/master/setup.md
+
+ODK 1.0.0 - Mar 4, 2013
+=======================
 -Made it easier for developers to check what button states change each frame
 -Added action to allow apps to intent filter for detecting when the system menu is opening.
 
