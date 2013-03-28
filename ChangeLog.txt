@@ -1,4 +1,8 @@
-ODK 1.x.x - ??? ??, 2013
+ODK 1.0.2 - Mar 28, 2013
+========================
+-On the Dev portal, go to the Analytics header.  From there you can download a csv with basic analytics like downloads, purchases, and crash reportsWe plan to expand this and provide better views for it in the future-Discover is now live!  Users can find your games in the discover category, download them, and make in app purchases
+
+ODK 1.0.1 - Mar 21, 2013
 ========================
 - The console USB VID/PID has changed. Please see https://github.com/ouya/docs/blob/master/setup.md
 
