@@ -104,6 +104,7 @@ public class IapSampleActivity extends Activity {
         new Purchasable("long_sword"),
         new Purchasable("sharp_axe"),
         new Purchasable("cool_level"),
+        new Purchasable("awesome_sauce"),
         new Purchasable("__DECLINED__THIS_PURCHASE")
     );
 
@@ -264,7 +265,7 @@ public class IapSampleActivity extends Activity {
     @Override
     public void onStop() {
         unregisterReceiver(mAuthChangeReceiver);
-        super.onPause();
+        super.onStop();
     }
 
     /**
@@ -615,7 +616,13 @@ public class IapSampleActivity extends Activity {
     }
 
     /**
-     * The callback for when the user attempts to purchase something
+     * The callback for when the user attempts to purchase something. We're not worried about
+     * the user cancelling the purchase so we extend CancelIgnoringOuyaResponseListener, if
+     * you want to handle cancelations differently you should extend OuyaResponseListener and
+     * implement an onCancel method.
+     *
+     * @see tv.ouya.console.api.CancelIgnoringOuyaResponseListener
+     * @see tv.ouya.console.api.OuyaResponseListener#onCancel()
      */
     private class PurchaseListener extends CancelIgnoringOuyaResponseListener<String> {
         /**
