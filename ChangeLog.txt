@@ -1,10 +1,17 @@
+ODK 1.0.4 - May 21, 2013
+=======================
+- The latest OUYA Unity package now lives on public github https://github.com/ouya/ouya-unity-plugin
+- The community can now submit pull requests against the ouya-unity-plugin.
+
 ODK 1.0.3 - Apr 8, 2013
 ========================
 -Frequent updates to the OUYA Unity Package can be found at - http://tagenigma.com/ouya/OuyaSDK-1.0.0/
 
 ODK 1.0.2 - Mar 28, 2013
 ========================
--On the Dev portal, go to the Analytics header.  From there you can download a csv with basic analytics like downloads, purchases, and crash reportsWe plan to expand this and provide better views for it in the future-Discover is now live!  Users can find your games in the discover category, download them, and make in app purchases
+-On the Dev portal, go to the Analytics header.  From there you can download a csv with basic analytics like downloads, purchases, and crash reports
+We plan to expand this and provide better views for it in the future
+-Discover is now live!  Users can find your games in the discover category, download them, and make in app purchases
 -Frequent updates to the OUYA Unity Package can be found at - http://tagenigma.com/ouya/OuyaSDK-1.0.0/
 
 ODK 1.0.1 - Mar 21, 2013

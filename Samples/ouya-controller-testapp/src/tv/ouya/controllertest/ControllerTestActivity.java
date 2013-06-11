@@ -27,6 +27,12 @@ public class ControllerTestActivity extends Activity {
 	
 	private OuyaPlotFPS m_plot = null;
 
+    /**
+     * Array holding all the controller views for easy lookup.
+     */
+    private View[] mControllerViews;
+
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -42,6 +48,12 @@ public class ControllerTestActivity extends Activity {
         m_plot.m_keyDownText = (TextView) findViewById(R.id.keyDownTime);
         m_plot.m_keyUpText = (TextView) findViewById(R.id.keyUpTime);
         m_plot.m_genericMotionText = (TextView) findViewById(R.id.genericMotionTime);
+
+        mControllerViews = new View[4];
+        mControllerViews[0] = findViewById(R.id.controllerView1);
+        mControllerViews[1] = findViewById(R.id.controllerView2);
+        mControllerViews[2] = findViewById(R.id.controllerView3);
+        mControllerViews[3] = findViewById(R.id.controllerView4);
     }
     
     @Override
@@ -84,23 +96,10 @@ public class ControllerTestActivity extends Activity {
     }
 
     private View getControllerView(InputEvent event) {
-        View result = null;
         int playerNum = OuyaController.getPlayerNumByDeviceId(event.getDeviceId());
-        switch(playerNum) {
-            default:
-            case 0:
-                result = findViewById(R.id.controllerView1);
-                break;
-            case 1:
-                result = findViewById(R.id.controllerView2);
-                break;
-            case 2:
-                result = findViewById(R.id.controllerView3);
-                break;
-            case 3:
-                result = findViewById(R.id.controllerView4);
-                break;
+        if(playerNum >=0 && playerNum < mControllerViews.length) {
+            return mControllerViews[playerNum];
         }
-        return result;
+        return mControllerViews[0];
     }
 }

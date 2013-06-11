@@ -543,8 +543,8 @@ public class IapSampleActivity extends Activity {
     /**
      * The callback for when the list of user receipts has been requested.
      */
-    private class ReceiptListener extends CancelIgnoringOuyaResponseListener<String> {
-
+    private class ReceiptListener implements OuyaResponseListener<String>
+    {
         /**
          * Handle the successful fetching of the data for the receipts from the server.
          *
@@ -613,6 +613,15 @@ public class IapSampleActivity extends Activity {
             Log.w(LOG_TAG, "Request Receipts error (code " + errorCode + ": " + errorMessage + ")");
             showError("Could not fetch receipts (error " + errorCode + ": " + errorMessage + ")");
         }
+
+        /*
+         * Handle user canceling
+         */
+        @Override
+        public void onCancel()
+        {
+            showError("User cancelled getting receipts");
+        }
     }
 
     /**
@@ -624,7 +633,7 @@ public class IapSampleActivity extends Activity {
      * @see tv.ouya.console.api.CancelIgnoringOuyaResponseListener
      * @see tv.ouya.console.api.OuyaResponseListener#onCancel()
      */
-    private class PurchaseListener extends CancelIgnoringOuyaResponseListener<String> {
+    private class PurchaseListener implements OuyaResponseListener<String> {
         /**
          * The ID of the product the user is trying to purchase. This is used in the
          * onFailure method to start a re-purchase if they user wishes to do so.
@@ -774,6 +783,14 @@ public class IapSampleActivity extends Activity {
                         .setNegativeButton(R.string.cancel, null)
                         .show();
             }
+        }
+
+        /*
+         * Handling the user canceling
+         */
+        @Override
+        public void onCancel() {
+            showError("User cancelled purchase");
         }
     }
 

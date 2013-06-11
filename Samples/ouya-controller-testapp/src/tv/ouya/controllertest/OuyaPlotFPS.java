@@ -1,7 +1,6 @@
 package tv.ouya.controllertest;
 
 import java.io.IOException;
-import java.io.RandomAccessFile;
 
 import android.content.Context;
 import android.graphics.Canvas;
@@ -14,7 +13,6 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
-import tv.ouya.controllertest.MetricsCPU;
 
 public class OuyaPlotFPS extends View {
 
@@ -27,81 +25,54 @@ public class OuyaPlotFPS extends View {
 	public TextView m_keyDownText = null;
 	public TextView m_keyUpText = null;
 	public TextView m_genericMotionText = null;
-	private double m_cpu1 = 0.0;
-	private double m_cpu2 = 0.0;
-	private double m_cpu3 = 0.0;
-	private double m_cpu4 = 0.0;
-	
+	private double[] mCpuStats = new double[4];
+
 	public double m_keyDownTime = 0.0;
 	public double m_keyUpTime = 0.0;
 	public double m_genericMotionTime = 0.0;
 	
 	private MetricsCPU m_metricsCPU = null;
-	private boolean m_quitting = false;
-	
+
 	private void Init()
+        throws IOException
 	{
 		m_metricsCPU = new MetricsCPU();
-		
+
 		m_counts = new Double[m_plotSize];
 		for (int index = 0; index < m_plotSize; ++index)
 		{
 			m_counts[index] = 0.0;
 		}
-		
-		Runnable r = new Runnable() {
-		   @Override
-		   public void run(){
-			   while (!m_quitting)
-			   {
-				   m_cpu1 = m_metricsCPU.readUsage("cpu0", 0);
-				   m_cpu2 = m_metricsCPU.readUsage("cpu1", 1);
-				   m_cpu3 = m_metricsCPU.readUsage("cpu2", 2);
-				   m_cpu4 = m_metricsCPU.readUsage("cpu3", 3);
-				try {
-						Thread.sleep(100);
-					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			   }
-			   Log.i("OuyaPlotFPS", "metrics thread exited", null);
-		   }
-		};
-		new Thread( r ).start();
 	}
 	
 	public void Quit()
 	{
-		m_quitting = true;
+        try {
+            m_metricsCPU.close();
+        } catch (IOException e) {
+            Log.e("OUYAPlotFPS", "Error closing metrics stream", e);
+        }
 		Log.i("OuyaPlotFPS", "Quitting...", null);
 	}
 	
-    public OuyaPlotFPS(Context context, AttributeSet attrs) {
+    public OuyaPlotFPS(Context context, AttributeSet attrs)
+        throws IOException {
         super(context, attrs);
         Init();
     }
 
-    public OuyaPlotFPS(Context context, AttributeSet attrs, int defStyle) {
+    public OuyaPlotFPS(Context context, AttributeSet attrs, int defStyle)
+            throws IOException  {
         super(context, attrs, defStyle);
         Init();
     }
 
-    public OuyaPlotFPS(Context context) {
+    public OuyaPlotFPS(Context context)
+            throws IOException  {
         super(context);
         Init();
     }
     
-	private void drawBackground(Canvas canvas) {
-		Rect ourRect = new Rect();
-		ourRect.set(0, 0, canvas.getWidth(), canvas.getHeight());
-		
-		Paint paint1 = new Paint();		
-		paint1.setShader(new LinearGradient(0, 0, canvas.getWidth(), canvas.getHeight(), Color.BLACK, Color.WHITE, TileMode.CLAMP));
-		
-		canvas.drawRect(ourRect, paint1);	
-	}
-	
     private long m_timer = -1;
     private Double[] m_counts = null;
     private int m_time = 0;
@@ -119,27 +90,28 @@ public class OuyaPlotFPS extends View {
 		//timer to update fps label
 		if (m_timer < System.nanoTime())
 		{
-			m_timer = (long)(System.nanoTime() + 1000000000);
+			m_timer = System.nanoTime() + 1000000000;
 			if (null != m_fpsText)
 			{
 				m_fpsText.setText(String.format("FPS: %.2f", 1.0 / (System.nanoTime() / 1000000000.0 - getDrawingTime() / 1000.0)));
 			}
-			
+
+            m_metricsCPU.readUsage(mCpuStats);
 			if (null != m_cpu1Text)
 			{
-				m_cpu1Text.setText(String.format("CPU1: %.2f", m_cpu1));
+				m_cpu1Text.setText(String.format("CPU1: %.2f", mCpuStats[0]));
 			}
 			if (null != m_cpu2Text)
 			{
-				m_cpu2Text.setText(String.format("CPU2: %.2f", m_cpu2));
+				m_cpu2Text.setText(String.format("CPU2: %.2f", mCpuStats[1]));
 			}
 			if (null != m_cpu3Text)
 			{
-				m_cpu3Text.setText(String.format("CPU3: %.2f", m_cpu3));
+				m_cpu3Text.setText(String.format("CPU3: %.2f", mCpuStats[2]));
 			}
 			if (null != m_cpu4Text)
 			{
-				m_cpu4Text.setText(String.format("CPU4: %.2f", m_cpu4));
+				m_cpu4Text.setText(String.format("CPU4: %.2f", mCpuStats[3]));
 			}
 			if (null != m_keyDownText)
 			{

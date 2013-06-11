@@ -1,47 +1,74 @@
 package tv.ouya.controllertest;
 
+import android.util.Log;
+
+import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
 public class MetricsCPU
 {
+    /**
+     * The line starts to look for
+     */
+
+    private static final char[] INDEX_IDS = { '0', '1', '2', '3' };
+
+    /**
+     * The reader for CPU stats
+     */
+    private RandomAccessFile mReader = null;
+
 	private long[] mUser;
     private long[] mSystem;
     private long[] mTotal;
 	
 	public MetricsCPU()
+        throws IOException
 	{
 		mUser = new long[] {0, 0, 0, 0};
 		mSystem = new long[] {0, 0, 0, 0};
 		mTotal = new long[] {0, 0, 0, 0};
-	}
-	
-    public double readUsage(String label, int index)
-    {
-        try
-        {
-            RandomAccessFile reader = new RandomAccessFile("/proc/stat", "r");
-            try
-            {
-	            String line;
-	            while ((line = reader.readLine()) != null)
-	            {
-	                if (line.startsWith(label))
-	                {
-	                	return updateStats(line.trim().split("[ ]+"), index);
-	                }
-	            }
-            }
-            catch (IOException ex)
-            {
-            	//read file issue
-            }
-            reader.close();
-        } catch (IOException ex) {
-            ex.printStackTrace();
+
+        String fileName = "/proc/stat";
+        File f = new File(fileName);
+        if (!f.exists()) {
+            throw new RuntimeException("/proc/stat unavailable");
         }
 
-        return 0;
+        mReader = new RandomAccessFile(fileName, "r");
+	}
+	
+    public synchronized void readUsage(double[] mCpuStats)
+    {
+        try {
+            mReader.seek(0L);
+
+            int filled = 0;
+            String line;
+            while ((line = mReader.readLine()) != null && filled < 4)
+            {
+                if (line.startsWith("cpu"))
+                {
+                    for(int i = 0 ; i < INDEX_IDS.length ; i++) {
+                        if(line.charAt(3) == INDEX_IDS[i]) {
+                            mCpuStats[i] = updateStats(line.trim().split("[ ]+"), i);
+                            filled++;
+                            break;
+                        }
+                    }
+                }
+            }
+        } catch (IOException ex) {
+            Log.i("MetricsCPU", "Problem reading metrics", ex);
+        }
+    }
+
+    public synchronized void close()
+        throws IOException {
+        if(mReader != null) {
+            mReader.close();
+        }
     }
     
     private double updateStats(String[] segs, int index)
