@@ -142,10 +142,25 @@ public class ControllerView extends RelativeLayout {
 
     @Override
     public boolean onGenericMotionEvent(MotionEvent event) {
-        lstickView.setTranslationX(event.getAxisValue(OuyaController.AXIS_LS_X) * 5f);
-        lstickView.setTranslationY(event.getAxisValue(OuyaController.AXIS_LS_Y) * 5f);
-        rstickView.setTranslationX(event.getAxisValue(OuyaController.AXIS_RS_X) * 5f);
-        rstickView.setTranslationY(event.getAxisValue(OuyaController.AXIS_RS_Y) * 5f);
+
+    	//rotate Left Stick input by N degrees to match image orientation
+    	float degrees = 135f;
+    	float radians = degrees / 180f * 3.14f;
+    	float cs = (float)Math.cos(radians);
+    	float sn = (float)Math.sin(radians);
+
+    	float x = event.getAxisValue(OuyaController.AXIS_LS_X);
+    	float y = event.getAxisValue(OuyaController.AXIS_LS_Y);
+
+    	lstickView.setTranslationX((x * cs - y * sn) * 5f);
+    	lstickView.setTranslationY((x * sn + y * cs) * 5f);
+
+    	//rotate Right Stick by same degrees to match image orientation
+    	x = event.getAxisValue(OuyaController.AXIS_RS_X);
+    	y = event.getAxisValue(OuyaController.AXIS_RS_Y);
+
+    	rstickView.setTranslationX((x * cs - y * sn) * 5f);
+    	rstickView.setTranslationY((x * sn + y * cs) * 5f);
 
         float ltrigger = event.getAxisValue(OuyaController.AXIS_L2);
         if(ltrigger != 0.0f) {

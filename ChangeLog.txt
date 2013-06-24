@@ -1,7 +1,64 @@
+ODK 1.0.6 - June 24, 2013
+=======================
+- Game Details page has been re-designed:
+-- Images and buttons now easier to navigate
+-- Selecting (Pressing the (O) button on) an image will show it full screen
+-- Description text no longer flows off screen.
+-- “More Info” button allows user to read full description text
+-- Longer titles now accommodated better
+-- Queued downloads now display as "In Queue…"
+-- Ratings system has been updated to use a more intuitive system of age ranges
+-- Founders Icon for games now appears on the Game Details page.  Thanks for believing!
+- Download behavior changes:
+-- Game downloads can now be cancelled!
+-- Downloads have been limited to 1 to increase performance while navigating during a download
+-- Downloads are paused when a game is running to maintain best performance while playing.  They resume automatically when exiting the game
+-- Downloads now start in the order they were queued
+-- Downloads give a clear indication when there is not enough space left to accommodate them
+- Added the ability to set a PIN code for purchases.  Parents rejoice!  This can be found in under MANAGE -> ACCOUNT -> PARENTAL CONTROLS
+- Added support for redeeming pre-paid cards.  They can be redeemed when creating a new user, or from the MANAGE -> ACCOUNT -> PAYMENTS screen
+- Re-flowed in-game purchases to accommodate pre-paid cards.  Allows the user to fix purchase errors without leaving the game.
+- Logging out now allows users to log in or create a new user
+- PLAY category now sorts by most recently played or downloaded
+- Changed background image.  Style points +1
+- Changed layout of Network screen to match the new user experience.
+- Changed the look of more dialogs to have the OUYA theme
+- Fixed bug that could cause the account screen to appear to not respond to user input
+- Fixed a bug that could occur when getting a system update while out of space
+- New repository with 3rd party game engine examples: https://github.com/ouya/ouya-sdk-examples/
+
+ODK 1.0.5 - June 11, 2013
+=======================
+- New Discover section is LIVE!
+-- Layout is changed to better highlight games and allow the user to more easily access them.
+-- Tile images now load in more quickly and have better caching.
+-- Improved performance and navigation.
+-- Download progress is now shown on the tile for each game, making it easier to see progress.  OUYA supports 3 simultaneous downloads and will queue requested downloads above 3. 
+-- Genre sections launch user to a new window so many more games can be seen at a time.
+- Play category now loads more quickly and scrolls smoother for users with lots of games.
+- Games with available updates now have an icon in the top right corner of their tiles in both Play and Discover.  Users can download the update from the tile in Play, or from the Game Details screen. 
+- Downloaded games now install automatically.  No more annoying default Android permissions screen!  No more 'Install' tiles in the Play menu! Working on world peace next.
+- Users can put their OUYA into sleep mode via the controller. Hit (Y) from the main menu to do so.  OUYAs in sleep mode can be woken up by turning on a controller or pressing the power button on top of the OUYA.
+- Android settings and Browser now respect TV safe zones.  And yup, part of the 'O' in OUYA is still supposed to be off screen on the Main Menu =) 
+- Region Restrictions are now available for Developers.  You can restrict regions for your games through the Dev Portal.  Remember, you are choosing which regions to NOT show in.  Your games show in all regions by default.
+- Release Calendar is now available for developers.  Devs can choose to give a release date for their title that will show on ouya.tv for all users to see.  It'™s a great way to tell people to look out for your game!
+- Fixed issue that could cause input queuing in some games.
+- Changed 'Re-run Setup' to do a full factory reset (and renamed it to 'Factory Reset').
+
 ODK 1.0.4 - May 21, 2013
 =======================
 - The latest OUYA Unity package now lives on public github https://github.com/ouya/ouya-unity-plugin
 - The community can now submit pull requests against the ouya-unity-plugin.
+- Improvements to all screens during initial out-of-box experience
+- MAKE category is no longer super aggro with its pop-up
+- Improvements to game downloads if internet connection is lost mid-download
+- Performance improvements with controllers
+- Fixed null reference exception that could occur when main menu appears
+- Fixed an issue where the displayed expiration date for cards could be off by 1 month
+- Fixed an issue where ethernet connection was sometimes not recognized if the cable was inserted after boot up
+- Going to console updates with no internet connection no longer puts users into a loop
+- Cleanup on button legends to be more accurate
+- Minor layout tweaks to soft keyboard
 
 ODK 1.0.3 - Apr 8, 2013
 ========================

@@ -34,7 +34,6 @@ import android.widget.Toast;
 import org.json.JSONException;
 import org.json.JSONObject;
 import tv.ouya.console.api.*;
-import tv.ouya.console.internal.util.Strings;
 
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
@@ -42,7 +41,10 @@ import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.security.*;
+import java.security.GeneralSecurityException;
+import java.security.KeyFactory;
+import java.security.PublicKey;
+import java.security.SecureRandom;
 import java.security.spec.X509EncodedKeySpec;
 import java.text.ParseException;
 import java.util.*;
@@ -105,6 +107,8 @@ public class IapSampleActivity extends Activity {
         new Purchasable("sharp_axe"),
         new Purchasable("cool_level"),
         new Purchasable("awesome_sauce"),
+        new Purchasable("blood_diamond"),
+        new Purchasable("jet_pack_really_long"),
         new Purchasable("__DECLINED__THIS_PURCHASE")
     );
 
@@ -707,82 +711,12 @@ public class IapSampleActivity extends Activity {
                 return;
             }
 
-            new AlertDialog.Builder(IapSampleActivity.this)
-                    .setTitle(getString(R.string.alert_title))
-                    .setMessage("You have successfully purchased a " + mProduct.getName() + " for " + Strings.formatDollarAmount(mProduct.getPriceInCents()))
-                    .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            dialogInterface.dismiss();
-                        }
-                    })
-                    .show();
             requestReceipts();
 
         }
 
-        /**
-         * Handle an error. If the OUYA framework supplies an intent this means that the user needs to
-         * either authenticate or re-authenticate themselves, so we start the supplied intent.
-         *
-         * @param errorCode An HTTP error code between 0 and 999, if there was one. Otherwise, an internal error code from the
-         *                  Ouya server, documented in the {@link OuyaErrorCodes} class.
-         *
-         * @param errorMessage Empty for HTTP error codes. Otherwise, a brief, non-localized, explanation of the error.
-         *
-         * @param optionalData A Map of optional key/value pairs which provide additional information.
-         */
-
         @Override
         public void onFailure(int errorCode, String errorMessage, Bundle optionalData) {
-            OuyaPurchaseHelper.suspendPurchase(IapSampleActivity.this, mProduct.getIdentifier());
-
-            boolean wasHandledByAuthHelper =
-                    OuyaAuthenticationHelper.
-                            handleError(
-                                    IapSampleActivity.this, errorCode, errorMessage,
-                                    optionalData, PURCHASE_AUTHENTICATION_ACTIVITY_ID,
-                                    new OuyaResponseListener<Void>() {
-                                        @Override
-                                        public void onSuccess(Void result) {
-                                            restartInterruptedPurchase();   // Retry the purchase if the error was handled.
-                                        }
-
-                                        @Override
-                                        public void onFailure(int errorCode, String errorMessage,
-                                                              Bundle optionalData) {
-                                            showError("Unable to make purchase (error " +
-                                                    errorCode + ": " + errorMessage + ")");
-                                        }
-
-                                        @Override
-                                        public void onCancel() {
-                                            showError("Unable to make purchase");
-                                        }
-                                    });
-
-
-            if(!wasHandledByAuthHelper) {
-                // Show the user the error and offer them the ability to re-purchase if they
-                // decide the error is not permanent.
-                new AlertDialog.Builder(IapSampleActivity.this)
-                        .setTitle(getString(R.string.alert_title))
-                        .setMessage("Unfortunately, your purchase failed [error code " + errorCode + " (" + errorMessage + ")]. Would you like to try again?")
-                        .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                                dialogInterface.dismiss();
-                                try {
-                                    requestPurchase(mProduct);
-                                } catch (Exception ex) {
-                                    Log.e(LOG_TAG, "Error during purchase", ex);
-                                    showError(ex.getMessage());
-                                }
-                            }
-                        })
-                        .setNegativeButton(R.string.cancel, null)
-                        .show();
-            }
         }
 
         /*

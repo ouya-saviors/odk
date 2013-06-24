@@ -16,9 +16,7 @@
 
 package tv.ouya.sample;
 
-import android.app.AlertDialog;
 import android.os.Bundle;
-import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
@@ -47,12 +45,9 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.TimeZone;
 
-import static android.content.DialogInterface.BUTTON_NEGATIVE;
-import static android.content.DialogInterface.BUTTON_POSITIVE;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static junit.framework.Assert.*;
 import static org.junit.Assert.assertFalse;
-import static tv.ouya.console.api.OuyaController.BUTTON_O;
 
 @RunWith(RobolectricTestRunner.class)
 public class IapSampleActivityTest {
@@ -111,40 +106,6 @@ public class IapSampleActivityTest {
         assertEquals("green sock - $1.00", getButton(1).getText().toString());
     }
 
-    @Test
-    public void selectingAnItem_shouldRequestAPurchase() throws Exception {
-        initializeWithProducts(new Product("SKU1", "red sock", 100));
-
-        ouyaFacade.expectPurchaseRequestID("SKU1");
-        View view = productListView.getChildAt(0);
-        Robolectric.clickOn(view.findViewById(R.id.purchase_product_button));
-        assertTrue(ouyaFacade.requestPurchaseWasCalled());
-    }
-
-    @Test
-    public void completingAPurchase_shouldOpenThePurchaseSuccessDialog() throws Exception {
-        Product product = new Product("SKU1", "red sock", 100);
-        initializeWithProducts(product);
-
-        activity.requestPurchase(product);
-        ouyaFacade.simulatePurchaseSuccessResponse("{ \"identifier\":\"SKU1\", \"name\":\"red sock\", \"priceInCents\":\"100\"}");
-
-        ShadowAlertDialog latestDialog = shadowOf(ShadowAlertDialog.getLatestAlertDialog());
-        assertEquals("You have successfully purchased a red sock for $1.00", latestDialog.getMessage());
-        assertEquals("IAP Sample App", latestDialog.getTitle());
-    }
-
-    @Test
-    public void completingAPurchase_shouldRedisplayTheReceipts() throws Exception {
-        Product product = new Product("SKU1", "red sock", 100);
-        initializeWithProducts(product);
-
-        activity.requestPurchase(product);
-        ouyaFacade.resetCalledFlags();
-        ouyaFacade.simulatePurchaseSuccessResponse("{ \"identifier\":\"SKU1\", \"name\":\"red sock\", \"priceInCents\":\"100\"}");
-        assertTrue(ouyaFacade.requestReceiptsWasCalled());
-    }
-
     @Ignore
     @Test
     public void redisplayingReceiptsShouldClearOutPreviousReceipts() throws Exception {
@@ -166,38 +127,6 @@ public class IapSampleActivityTest {
         ouyaFacade.addReceipts(receipts);
         ouyaFacade.simulateReceiptListSuccess();
         assertEquals(3, ((ListView) activity.findViewById(R.id.receipts)).getCount());
-    }
-
-    @Test
-    public void purchaseFailure_shouldOpenThePurchaseFailureDialog() throws Exception {
-        initiateAFailingPurchase(123, "msg");
-
-        ShadowAlertDialog latestDialog = shadowOf(ShadowAlertDialog.getLatestAlertDialog());
-        assertEquals("Unfortunately, your purchase failed [error code 123 (msg)]. Would you like to try again?", latestDialog.getMessage());
-        assertEquals("IAP Sample App", latestDialog.getTitle());
-    }
-
-    @Test
-    public void clickingCancel_whenPurchaseFailed_shouldCloseThePurchaseFailureDialog() throws Exception {
-        initiateAFailingPurchase(0, "");
-
-        AlertDialog latestDialog = ShadowAlertDialog.getLatestAlertDialog();
-        Robolectric.clickOn(latestDialog.getButton(BUTTON_NEGATIVE));
-        assertTrue(shadowOf(latestDialog).hasBeenDismissed());
-    }
-
-    @Test
-    public void clickingOk_whenPurchaseFailed_shouldReopenThePurchaseDialog() throws Exception {
-        initiateAFailingPurchase(0, "");
-        ouyaFacade.clear();
-
-        ouyaFacade.expectPurchaseRequestID("BAD_SKU");
-        AlertDialog latestDialog = ShadowAlertDialog.getLatestAlertDialog();
-        Robolectric.clickOn(latestDialog.getButton(BUTTON_POSITIVE));
-        assertTrue(shadowOf(latestDialog).hasBeenDismissed());
-
-
-        assertTrue(ouyaFacade.requestPurchaseWasCalled());
     }
 
     @Ignore
@@ -255,16 +184,6 @@ public class IapSampleActivityTest {
         Robolectric.clickOn(activity.findViewById(R.id.gamer_uuid_button));
         ouyaFacade.simulateGamerUuidFailure(7766, "not fetchable", new Bundle());
         assertEquals("Unable to fetch gamer UUID (error 7766: not fetchable)", ShadowToast.getTextOfLatestToast());
-    }
-
-    @Test
-    public void pressingButtonO_whenAProductIsSelected_shouldRequestAPurchase() throws Exception {
-        initializeWithProducts(new Product("SKU1", "red sock", 100));
-
-        shadowOf(activity).setCurrentFocus(productListView.getChildAt(0).findViewById(R.id.purchase_product_button));
-        boolean wasConsumed = activity.onKeyUp(BUTTON_O, new KeyEvent(KeyEvent.ACTION_UP, BUTTON_O));
-        assertTrue(wasConsumed);
-        assertTrue(ouyaFacade.requestPurchaseWasCalled());
     }
 
     private void initiateAFailingPurchase(int errorCode, String errorMessage)
