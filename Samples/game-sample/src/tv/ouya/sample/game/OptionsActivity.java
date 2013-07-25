@@ -63,8 +63,10 @@ public class OptionsActivity extends Activity {
     private static byte[] applicationKey;
 
 
-    static private Map<Options.Level, RadioButton> levelToRadioButton;
-    static private Map<RadioButton, Options.Level> radioButtonToLevel;
+    private Map<Options.Level, RadioButton> levelToRadioButton;
+    private Map<RadioButton, Options.Level> radioButtonToLevel;
+
+    static private final String PREV_SELECTED_LEVEL_KEY = "last_selected_level";
 
     private static final String DEVELOPER_ID = "310a8f51-4d6e-4ae5-bda0-b93878e5f5d0";
 
@@ -116,6 +118,12 @@ public class OptionsActivity extends Activity {
 
         mOuyaFacade = OuyaFacade.getInstance();
         mOuyaFacade.init(this, DEVELOPER_ID);
+
+        String prevSelectedLevel = mOuyaFacade.getGameData(PREV_SELECTED_LEVEL_KEY);
+        if (prevSelectedLevel != null) {
+            Options.Level prevLevel = Options.Level.valueOf(prevSelectedLevel);
+            Options.getInstance().setLevel(prevLevel);
+        }
 
         levelToRadioButton.get(Options.getInstance().getLevel()).setChecked(true);
 
@@ -387,7 +395,12 @@ public class OptionsActivity extends Activity {
             }
         } else {
             Options.Level level = radioButtonToLevel.get(view);
-            getInstance().setLevel(level);
+            selectLevel(level);
         }
+    }
+
+    private void selectLevel(Options.Level level) {
+        getInstance().setLevel(level);
+        mOuyaFacade.putGameData(PREV_SELECTED_LEVEL_KEY, level.toString());
     }
 }

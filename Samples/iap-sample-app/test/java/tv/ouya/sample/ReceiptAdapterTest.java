@@ -38,9 +38,9 @@ public class ReceiptAdapterTest {
     @Before
     public void setUp() throws Exception {
         adapter = new ReceiptAdapter(Robolectric.application, new Receipt[] {
-                new Receipt("one", 100, new Date(1000000000L), new Date(0)),
-                new Receipt("two", 200, new Date(2000000000L), new Date(0)),
-                new Receipt("three", 300, new Date(3000000000L), new Date(0))});
+                new Receipt("one", 100, new Date(1000000000L), new Date(0), "gamer", "uuid"),
+                new Receipt("two", 200, new Date(2000000000L), new Date(0), "gamer", "uuid"),
+                new Receipt("three", 300, new Date(3000000000L), new Date(0), "gamer", "uuid")});
         forceLosAngeles();
     }
 

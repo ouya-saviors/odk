@@ -65,10 +65,10 @@ public class IapSampleActivityTest {
         callOnCreateAndFindViews();
     }
 
-    public static Receipt newReceipt(String product, int price, String date) throws ParseException {
+    public static Receipt newReceipt(String product, int price, String date, String gamer, String uuid) throws ParseException {
         SimpleDateFormat dateParser = new SimpleDateFormat("yyy-MM-dd'T'HH:mm:ss'Z'");
         dateParser.setTimeZone(TimeZone.getTimeZone("UTC"));
-        return new Receipt(product, price, dateParser.parse(date), new Date(0));
+        return new Receipt(product, price, dateParser.parse(date), new Date(0), gamer, uuid);
     }
 
     @Test
@@ -113,8 +113,8 @@ public class IapSampleActivityTest {
         initializeWithProducts(product);
 
         ArrayList<Receipt> receipts = new ArrayList<Receipt>();
-        receipts.add(newReceipt("sku2", 874, "1987-12-31T16:00:00Z"));
-        receipts.add(newReceipt("sku1", 123, "1999-12-31T16:00:00Z"));
+        receipts.add(newReceipt("sku2", 874, "1987-12-31T16:00:00Z", "gamer", "uuid"));
+        receipts.add(newReceipt("sku1", 123, "1999-12-31T16:00:00Z", "gamer", "uuid"));
         ouyaFacade.addReceipts(receipts);
         ouyaFacade.simulateReceiptListSuccess();
         assertEquals(2, ((ListView) activity.findViewById(R.id.receipts)).getAdapter().getCount());
@@ -123,7 +123,7 @@ public class IapSampleActivityTest {
         ouyaFacade.simulatePurchaseSuccessResponse("{ \"identifier\":\"SKU1\", \"name\":\"red sock\", \"priceInCents\":\"100\"}");
 
         receipts = new ArrayList<Receipt>();
-        receipts.add(newReceipt("sku1", 123, "2001-12-31T16:00:00Z"));
+        receipts.add(newReceipt("sku1", 123, "2001-12-31T16:00:00Z", "gamer", "uuid"));
         ouyaFacade.addReceipts(receipts);
         ouyaFacade.simulateReceiptListSuccess();
         assertEquals(3, ((ListView) activity.findViewById(R.id.receipts)).getCount());
@@ -133,8 +133,8 @@ public class IapSampleActivityTest {
     @Test
     public void shouldDisplayAllReceiptsWithNewestReceiptFirst() throws Exception {
         ArrayList<Receipt> receipts = new ArrayList<Receipt>();
-        receipts.add(newReceipt("sku2", 874, "1987-12-31T16:00:00Z"));
-        receipts.add(newReceipt("sku1", 123, "1999-12-31T16:00:00Z"));
+        receipts.add(newReceipt("sku2", 874, "1987-12-31T16:00:00Z", "gamer", "uuid"));
+        receipts.add(newReceipt("sku1", 123, "1999-12-31T16:00:00Z", "gamer", "uuid"));
         ouyaFacade.addReceipts(receipts);
         ouyaFacade.simulateReceiptListSuccess();
         assertEquals(2, receiptListView.getCount());

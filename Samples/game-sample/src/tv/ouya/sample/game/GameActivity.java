@@ -29,6 +29,8 @@ import static tv.ouya.sample.game.R.*;
 public class GameActivity extends Activity {
     private Player[] players;
 
+    static public Boolean pauseInput = new Boolean(false);
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -46,7 +48,7 @@ public class GameActivity extends Activity {
 
         players = new Player[4];
         for(int i = 0; i < 4; ++i) {
-            players[i] = new Player(i);
+            players[i] = new Player(this, i);
 
             // Show ships for controllers that are currently connected
             OuyaController ouyaController = OuyaController.getControllerByPlayer(i);
@@ -90,8 +92,11 @@ public class GameActivity extends Activity {
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-        boolean handled = OuyaController.onKeyDown(keyCode, event);
-        findOrCreatePlayer(event.getDeviceId());
+        boolean handled = false;
+        synchronized (pauseInput) {
+            handled = OuyaController.onKeyDown(keyCode, event);
+            findOrCreatePlayer(event.getDeviceId());
+        }
 
         if (keyCode == OuyaController.BUTTON_A) {
             finish();
@@ -102,14 +107,19 @@ public class GameActivity extends Activity {
 
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
-        boolean handled = OuyaController.onKeyUp(keyCode, event);
+        boolean handled = false;
+        synchronized (pauseInput) {
+            handled = OuyaController.onKeyUp(keyCode, event);
+        }
         return handled || super.onKeyUp(keyCode, event);
     }
 
     @Override
     public boolean onGenericMotionEvent(MotionEvent event) {
-        int odid = event.getDeviceId();
-        boolean handled = OuyaController.onGenericMotionEvent(event);
+        boolean handled = false;
+        synchronized (pauseInput) {
+            handled = OuyaController.onGenericMotionEvent(event);
+        }
 
         OuyaController c = OuyaController.getControllerByDeviceId(event.getDeviceId());
         if (c != null) {

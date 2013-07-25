@@ -1,3 +1,10 @@
+ODK 1.0.7 - July 23, 2013
+=======================
+- Exposed more information in the Receipt class: purchasing gamer uuid & app-specified purchase uuid
+- Finally fixed OuyaController.startOfFrame crash
+- Fixed OuyaFacade.getGameData always returning the incorrect value
+- Added OuyaFacade.getAllGameData to get all key/value pairs
+
 ODK 1.0.6 - June 24, 2013
 =======================
 - Game Details page has been re-designed:

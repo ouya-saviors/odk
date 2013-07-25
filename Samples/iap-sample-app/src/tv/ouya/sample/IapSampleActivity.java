@@ -105,10 +105,7 @@ public class IapSampleActivity extends Activity {
     public static final List<Purchasable> PRODUCT_IDENTIFIER_LIST = Arrays.asList(
         new Purchasable("long_sword"),
         new Purchasable("sharp_axe"),
-        new Purchasable("cool_level"),
         new Purchasable("awesome_sauce"),
-        new Purchasable("blood_diamond"),
-        new Purchasable("jet_pack_really_long"),
         new Purchasable("__DECLINED__THIS_PURCHASE")
     );
 
@@ -568,17 +565,7 @@ public class IapSampleActivity extends Activity {
             } catch (ParseException e) {
                 throw new RuntimeException(e);
             } catch (JSONException e) {
-                if(e.getMessage().contains("ENCRYPTED")) {
-                    // This is a hack for some testing code which will be removed
-                    // before the consumer release
-                    try {
-                        receipts = helper.parseJSONReceiptResponse(receiptResponse);
-                    } catch (IOException ioe) {
-                        throw new RuntimeException(ioe);
-                    }
-                } else {
-                    throw new RuntimeException(e);
-                }
+                throw new RuntimeException(e);
             } catch (GeneralSecurityException e) {
                 throw new RuntimeException(e);
             } catch (IOException e) {
@@ -686,23 +673,8 @@ public class IapSampleActivity extends Activity {
             } catch (ParseException e) {
                 onFailure(OuyaErrorCodes.THROW_DURING_ON_SUCCESS, e.getMessage(), Bundle.EMPTY);
             } catch (JSONException e) {
-                if(e.getMessage().contains("ENCRYPTED")) {
-                    // This is a hack for some testing code which will be removed
-                    // before the consumer release
-                    try {
-                        product = new Product(new JSONObject(result));
-                        if(!mProduct.getIdentifier().equals(product.getIdentifier())) {
-                            onFailure(OuyaErrorCodes.THROW_DURING_ON_SUCCESS, "Purchased product is not the same as purchase request product", Bundle.EMPTY);
-                            return;
-                        }
-                    } catch (JSONException jse) {
-                        onFailure(OuyaErrorCodes.THROW_DURING_ON_SUCCESS, e.getMessage(), Bundle.EMPTY);
-                        return;
-                    }
-                } else {
-                    onFailure(OuyaErrorCodes.THROW_DURING_ON_SUCCESS, e.getMessage(), Bundle.EMPTY);
-                    return;
-                }
+                onFailure(OuyaErrorCodes.THROW_DURING_ON_SUCCESS, e.getMessage(), Bundle.EMPTY);
+                return;
             } catch (IOException e) {
                 onFailure(OuyaErrorCodes.THROW_DURING_ON_SUCCESS, e.getMessage(), Bundle.EMPTY);
                 return;

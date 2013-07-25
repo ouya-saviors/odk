@@ -17,6 +17,7 @@
 package tv.ouya.sample.game;
 
 import android.opengl.GLSurfaceView;
+import tv.ouya.console.api.OuyaController;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -78,25 +79,32 @@ public class GameRenderer implements GLSurfaceView.Renderer {
         gl.glClear(GL10.GL_COLOR_BUFFER_BIT);
         gl.glLoadIdentity();
 
-        synchronized (objects) {
-
-            synchronized (toBeDeleted) {
-                for(RenderObject o : toBeDeleted) {
-                    objects.remove(o);
-                }
-                toBeDeleted.clear();
+        synchronized (toBeDeleted) {
+            for(RenderObject o : toBeDeleted) {
+                objects.remove(o);
             }
-            synchronized (toBeAdded) {
-                for(RenderObject o : toBeAdded) {
-                    objects.add(o);
-                }
-                toBeAdded.clear();
+            toBeDeleted.clear();
+        }
+        synchronized (toBeAdded) {
+            for(RenderObject o : toBeAdded) {
+                objects.add(o);
             }
+            toBeAdded.clear();
+        }
 
+        // Since render is on a different thread than the input
+        // key dispatching, briefly pause input dispatching while
+        // we query & reset the controller info.
+        synchronized (GameActivity.pauseInput) {
             for(RenderObject o : objects) {
                 o.update();
-                o.doRender(gl);
             }
+            OuyaController.startOfFrame();
+        }
+
+        for(RenderObject o : objects) {
+            o.update();
+            o.doRender(gl);
         }
     }
 

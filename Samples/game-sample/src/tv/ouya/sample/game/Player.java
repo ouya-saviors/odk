@@ -16,8 +16,11 @@
 
 package tv.ouya.sample.game;
 
+import android.content.Context;
 import android.graphics.Color;
 import android.graphics.PointF;
+import android.media.MediaPlayer;
+import android.util.Log;
 import tv.ouya.console.api.OuyaController;
 
 import javax.microedition.khronos.opengles.GL10;
@@ -43,10 +46,23 @@ public class Player extends RenderObject {
     static final private float c_playerRadius = 0.5f;
     static final private float c_timeBetweenShots = 0.1f;
 
-    public Player(int playerNum) {
+    static MediaPlayer s_sfx[] = null;
+
+    public Player(Context context, int playerNum) {
         super(c_playerRadius);
         this.playerNum = playerNum;
         shootDir = new PointF();
+
+        if (s_sfx == null) {
+            try {
+                s_sfx = new MediaPlayer[3];
+                s_sfx[0] = MediaPlayer.create(context, R.raw.sound1);
+                s_sfx[1] = MediaPlayer.create(context, R.raw.sound2);
+                s_sfx[2] = MediaPlayer.create(context, R.raw.sound3);
+            }
+            catch (Exception e) {
+            }
+        }
 
         setCollisionListener(new CollisionListener() {
             @Override
@@ -121,6 +137,24 @@ public class Player extends RenderObject {
         return (stickMag >= OuyaController.STICK_DEADZONE);
     }
 
+    private void checkPlaySound(OuyaController c) {
+        if (c.buttonChangedThisFrame(OuyaController.BUTTON_Y)) {
+            Log.d("BUTTON", "State changed");
+        }
+        if (c.buttonPressedThisFrame(OuyaController.BUTTON_Y)) {
+            int sfxIdx = 0;
+            int rnd = (int)(Math.random() * 10);
+            if (rnd > 5) {
+                sfxIdx = 0;
+            } else if (rnd > 0) {
+                sfxIdx = 1;
+            } else {
+                sfxIdx = 2;
+            }
+            s_sfx[sfxIdx].start();
+        }
+    }
+
     private void getForwardAmountFromController(OuyaController c) {
         float axisX = c.getAxisValue(OuyaController.AXIS_LS_X);
         axisX = Math.min(axisX, 1.0f);
@@ -171,6 +205,7 @@ public class Player extends RenderObject {
 
         super.update();
 
+        checkPlaySound(c);
         getForwardAmountFromController(c);
         getShootDirFromController(c);
 
