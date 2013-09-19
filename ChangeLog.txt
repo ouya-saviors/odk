@@ -1,3 +1,7 @@
+ODK 1.0.8 - September 19, 2013
+=======================
+- Purchase receipt objects now include the currency they were purchased with and localized price fields, along with helper functions for formatting the localized price for display
+
 ODK 1.0.7 - July 23, 2013
 =======================
 - Exposed more information in the Receipt class: purchasing gamer uuid & app-specified purchase uuid

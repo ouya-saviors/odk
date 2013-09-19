@@ -23,7 +23,6 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 import tv.ouya.console.api.Receipt;
-import tv.ouya.sample.util.Strings;
 
 import java.text.SimpleDateFormat;
 import java.util.TimeZone;
@@ -53,7 +52,7 @@ public class ReceiptAdapter extends ArrayAdapter<Receipt> {
         Receipt receipt = getItem(position);
         ((TextView) view.findViewById(R.id.date)).setText(formatter.format(receipt.getPurchaseDate()));
         ((TextView) view.findViewById(R.id.productId)).setText(receipt.getIdentifier());
-        ((TextView) view.findViewById(R.id.price)).setText(Strings.formatDollarAmount(receipt.getPriceInCents()));
+        ((TextView) view.findViewById(R.id.price)).setText(receipt.getFormattedPrice());
         return view;
     }
 

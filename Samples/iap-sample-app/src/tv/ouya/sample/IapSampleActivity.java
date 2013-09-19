@@ -451,7 +451,7 @@ public class IapSampleActivity extends Activity {
     private View makeButton(Product item) {
         LayoutInflater inflater = LayoutInflater.from(this);
         View view = inflater.inflate(R.layout.product_item, null, false);
-        String buttonText = item.getName() + " - " + tv.ouya.sample.util.Strings.formatDollarAmount(item.getPriceInCents());
+        String buttonText = item.getName() + " - " + item.getFormattedPrice();
         Button button = (Button) view.findViewById(R.id.purchase_product_button);
         button.setOnClickListener(new RequestPurchaseClickListener());
         button.setText(buttonText);

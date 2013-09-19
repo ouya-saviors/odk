@@ -164,25 +164,11 @@ public class OptionsActivity extends Activity {
                 List<Receipt> receipts;
                 try {
                     JSONObject object = new JSONObject(receiptResponse);
-                    if(object.has("key") && object.has("iv") && object.has("blob")) {
-                        receipts = helper.decryptReceiptResponse(object, mPublicKey);
-                    } else {
-                        receipts = helper.parseJSONReceiptResponse(receiptResponse);
-                    }
+                    receipts = helper.decryptReceiptResponse(object, mPublicKey);
                 } catch (ParseException e) {
                     throw new RuntimeException(e);
                 } catch (JSONException e) {
-                    if(e.getMessage().contains("ENCRYPTED")) {
-                        // This is a hack for some testing code which will be removed
-                        // before the consumer release
-                        try {
-                            receipts = helper.parseJSONReceiptResponse(receiptResponse);
-                        } catch (IOException ioe) {
-                            throw new RuntimeException(ioe);
-                        }
-                    } else {
-                        throw new RuntimeException(e);
-                    }
+                    throw new RuntimeException(e);
                 } catch (GeneralSecurityException e) {
                     throw new RuntimeException(e);
                 } catch (IOException e) {
@@ -331,24 +317,8 @@ public class OptionsActivity extends Activity {
                         }
                     }
                 } catch (JSONException e) {
-                    if(e.getMessage().contains("ENCRYPTED")) {
-                        // This is a hack for some testing code which will be removed
-                        // before the consumer release
-                        try {
-                            Product product = new Product(new JSONObject(result));
-                            responseProductId = product.getIdentifier();
-                            if(!productId.equals(responseProductId)) {
-                                onFailure(OuyaErrorCodes.THROW_DURING_ON_SUCCESS, "Purchased product is not the same as purchase request product", Bundle.EMPTY);
-                                return;
-                            }
-                        } catch (JSONException jse) {
-                            onFailure(OuyaErrorCodes.THROW_DURING_ON_SUCCESS, e.getMessage(), Bundle.EMPTY);
-                            return;
-                        }
-                    } else {
-                        onFailure(OuyaErrorCodes.THROW_DURING_ON_SUCCESS, e.getMessage(), Bundle.EMPTY);
-                        return;
-                    }
+                    onFailure(OuyaErrorCodes.THROW_DURING_ON_SUCCESS, e.getMessage(), Bundle.EMPTY);
+                    return;
                 } catch (ParseException e) {
                     onFailure(OuyaErrorCodes.THROW_DURING_ON_SUCCESS, e.getMessage(), Bundle.EMPTY);
                     return;

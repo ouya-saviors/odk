@@ -65,10 +65,10 @@ public class IapSampleActivityTest {
         callOnCreateAndFindViews();
     }
 
-    public static Receipt newReceipt(String product, int price, String date, String gamer, String uuid) throws ParseException {
+    public static Receipt newReceipt(String product, int price, String date, String gamer, String uuid, double localPrice, String currency) throws ParseException {
         SimpleDateFormat dateParser = new SimpleDateFormat("yyy-MM-dd'T'HH:mm:ss'Z'");
         dateParser.setTimeZone(TimeZone.getTimeZone("UTC"));
-        return new Receipt(product, price, dateParser.parse(date), new Date(0), gamer, uuid);
+        return new Receipt(product, price, dateParser.parse(date), new Date(0), gamer, uuid, localPrice, currency);
     }
 
     @Test
@@ -84,7 +84,7 @@ public class IapSampleActivityTest {
 
     @Test
     public void canShowProductInListView() throws Exception {
-        Product product = new Product("SKU1", "red sock", 100);
+        Product product = new Product("SKU1", "red sock", 100, 1., "USD");
         activity.addProducts(Arrays.asList(product));
         assertEquals("red sock - $1.00", getButton(0).getText().toString());
     }
@@ -95,9 +95,9 @@ public class IapSampleActivityTest {
 
     @Test
     public void shouldGetProductsFromGateway() throws Exception {
-        Product product1 = new Product("SKU1", "red sock", 100);
-        Product product2 = new Product("SKU2", "green sock", 100);
-        Product product3 = new Product("SKU3", "blue sock", 100);
+        Product product1 = new Product("SKU1", "red sock", 100, 1., "USD");
+        Product product2 = new Product("SKU2", "green sock", 100, 1., "USD");
+        Product product3 = new Product("SKU3", "blue sock", 100, 1., "USD");
         ouyaFacade.addProducts(product1, product2, product3);
         ouyaFacade.expectRequestedIDs(IapSampleActivity.PRODUCT_IDENTIFIER_LIST);
         callOnCreateAndFindViews();
@@ -109,12 +109,12 @@ public class IapSampleActivityTest {
     @Ignore
     @Test
     public void redisplayingReceiptsShouldClearOutPreviousReceipts() throws Exception {
-        Product product = new Product("SKU1", "red sock", 100);
+        Product product = new Product("SKU1", "red sock", 100, 1., "USD");
         initializeWithProducts(product);
 
         ArrayList<Receipt> receipts = new ArrayList<Receipt>();
-        receipts.add(newReceipt("sku2", 874, "1987-12-31T16:00:00Z", "gamer", "uuid"));
-        receipts.add(newReceipt("sku1", 123, "1999-12-31T16:00:00Z", "gamer", "uuid"));
+        receipts.add(newReceipt("sku2", 874, "1987-12-31T16:00:00Z", "gamer", "uuid", 8.74, "USD"));
+        receipts.add(newReceipt("sku1", 123, "1999-12-31T16:00:00Z", "gamer", "uuid", 1.23, "USD"));
         ouyaFacade.addReceipts(receipts);
         ouyaFacade.simulateReceiptListSuccess();
         assertEquals(2, ((ListView) activity.findViewById(R.id.receipts)).getAdapter().getCount());
@@ -123,7 +123,7 @@ public class IapSampleActivityTest {
         ouyaFacade.simulatePurchaseSuccessResponse("{ \"identifier\":\"SKU1\", \"name\":\"red sock\", \"priceInCents\":\"100\"}");
 
         receipts = new ArrayList<Receipt>();
-        receipts.add(newReceipt("sku1", 123, "2001-12-31T16:00:00Z", "gamer", "uuid"));
+        receipts.add(newReceipt("sku1", 123, "2001-12-31T16:00:00Z", "gamer", "uuid", 1.23, "USD"));
         ouyaFacade.addReceipts(receipts);
         ouyaFacade.simulateReceiptListSuccess();
         assertEquals(3, ((ListView) activity.findViewById(R.id.receipts)).getCount());
@@ -133,8 +133,8 @@ public class IapSampleActivityTest {
     @Test
     public void shouldDisplayAllReceiptsWithNewestReceiptFirst() throws Exception {
         ArrayList<Receipt> receipts = new ArrayList<Receipt>();
-        receipts.add(newReceipt("sku2", 874, "1987-12-31T16:00:00Z", "gamer", "uuid"));
-        receipts.add(newReceipt("sku1", 123, "1999-12-31T16:00:00Z", "gamer", "uuid"));
+        receipts.add(newReceipt("sku2", 874, "1987-12-31T16:00:00Z", "gamer", "uuid", 8.74, "USD"));
+        receipts.add(newReceipt("sku1", 123, "1999-12-31T16:00:00Z", "gamer", "uuid", 1.23, "USD"));
         ouyaFacade.addReceipts(receipts);
         ouyaFacade.simulateReceiptListSuccess();
         assertEquals(2, receiptListView.getCount());
@@ -188,7 +188,7 @@ public class IapSampleActivityTest {
 
     private void initiateAFailingPurchase(int errorCode, String errorMessage)
             throws GeneralSecurityException, UnsupportedEncodingException, JSONException {
-        Product product = new Product("BAD_SKU", "bogus thing", 100);
+        Product product = new Product("BAD_SKU", "bogus thing", 100, 1., "USD");
         initializeWithProducts(product);
 
         activity.requestPurchase(product);
