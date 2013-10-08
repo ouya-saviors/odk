@@ -18,9 +18,12 @@ package tv.ouya.sample.game;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import tv.ouya.console.api.OuyaController;
 
 public class MenuActivity extends Activity {
     /**
@@ -30,6 +33,8 @@ public class MenuActivity extends Activity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.menu);
+
+        OuyaController.init(this);
 
         Button newGame = (Button) findViewById(R.id.new_game_button);
         newGame.setOnClickListener(new View.OnClickListener() {
@@ -54,5 +59,22 @@ public class MenuActivity extends Activity {
                 finish();
             }
         });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        // set to a custom icon
+        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.custom_cursor);
+        OuyaController.setCursorBitmap(bitmap, 0, 0);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        // reset to the default cursor icon
+        OuyaController.setCursorBitmap(null, 0, 0);
     }
 }

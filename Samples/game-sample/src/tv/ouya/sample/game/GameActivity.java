@@ -24,7 +24,8 @@ import android.view.View;
 import android.widget.Button;
 import tv.ouya.console.api.OuyaController;
 
-import static tv.ouya.sample.game.R.*;
+import static tv.ouya.sample.game.R.id;
+import static tv.ouya.sample.game.R.layout;
 
 public class GameActivity extends Activity {
     private Player[] players;
@@ -34,8 +35,6 @@ public class GameActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        OuyaController.init(this);
 
         setContentView(layout.game);
         Button quitGame = (Button) findViewById(id.quit_button);
@@ -88,6 +87,22 @@ public class GameActivity extends Activity {
                 }
                 break;
         }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        // hide the mouse cursor
+        OuyaController.showCursor(false);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        // show the mouse cursor
+        OuyaController.showCursor(true);
     }
 
     @Override

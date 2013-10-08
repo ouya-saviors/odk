@@ -1,3 +1,8 @@
+ODK 1.0.9 - October 8, 2013
+=======================
+- Can finally hide the mouse cursor!  Use this new method: OuyaController.showCursor
+- Can also modify the mouse cursor image!  OuyaController.setCursorBitmap
+
 ODK 1.0.8 - September 19, 2013
 =======================
 - Purchase receipt objects now include the currency they were purchased with and localized price fields, along with helper functions for formatting the localized price for display
