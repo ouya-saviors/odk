@@ -84,7 +84,7 @@ public class IapSampleActivityTest {
 
     @Test
     public void canShowProductInListView() throws Exception {
-        Product product = new Product("SKU1", "red sock", 100, 1., "USD");
+        Product product = new Product("SKU1", "red sock", 100, 1., "USD", 1., 0, "");
         activity.addProducts(Arrays.asList(product));
         assertEquals("red sock - $1.00", getButton(0).getText().toString());
     }
@@ -95,9 +95,9 @@ public class IapSampleActivityTest {
 
     @Test
     public void shouldGetProductsFromGateway() throws Exception {
-        Product product1 = new Product("SKU1", "red sock", 100, 1., "USD");
-        Product product2 = new Product("SKU2", "green sock", 100, 1., "USD");
-        Product product3 = new Product("SKU3", "blue sock", 100, 1., "USD");
+        Product product1 = new Product("SKU1", "red sock", 100, 1., "USD", 1., 0, "");
+        Product product2 = new Product("SKU2", "green sock", 100, 1., "USD", 1., 0, "");
+        Product product3 = new Product("SKU3", "blue sock", 100, 1., "USD", 1., 0, "");
         ouyaFacade.addProducts(product1, product2, product3);
         ouyaFacade.expectRequestedIDs(IapSampleActivity.PRODUCT_IDENTIFIER_LIST);
         callOnCreateAndFindViews();
@@ -109,7 +109,7 @@ public class IapSampleActivityTest {
     @Ignore
     @Test
     public void redisplayingReceiptsShouldClearOutPreviousReceipts() throws Exception {
-        Product product = new Product("SKU1", "red sock", 100, 1., "USD");
+        Product product = new Product("SKU1", "red sock", 100, 1., "USD", 1., 0, "");
         initializeWithProducts(product);
 
         ArrayList<Receipt> receipts = new ArrayList<Receipt>();
@@ -174,21 +174,22 @@ public class IapSampleActivityTest {
     @Test
     public void clickingUuid_fetchesUuidAndPopsAlert() throws Exception {
         Robolectric.clickOn(activity.findViewById(R.id.gamer_uuid_button));
-        ouyaFacade.simulateGamerUuidSuccess("myUuid");
-        assertEquals("myUuid", shadowOf(ShadowAlertDialog.getLatestAlertDialog()).getMessage());
+        ouyaFacade.simulateGamerInfoSuccess("myUuid", "myUsername");
+        assert(shadowOf(ShadowAlertDialog.getLatestAlertDialog()).getMessage().contains("myUuid"));
+        assert(shadowOf(ShadowAlertDialog.getLatestAlertDialog()).getMessage().contains("myUsername"));
         assertEquals("IAP Sample App", shadowOf(ShadowAlertDialog.getLatestAlertDialog()).getTitle());
     }
 
     @Test
     public void gamerUuidFailure_shouldPopToast() throws Exception {
         Robolectric.clickOn(activity.findViewById(R.id.gamer_uuid_button));
-        ouyaFacade.simulateGamerUuidFailure(7766, "not fetchable", new Bundle());
+        ouyaFacade.simulateGamerInfoFailure(7766, "not fetchable", new Bundle());
         assertEquals("Unable to fetch gamer UUID (error 7766: not fetchable)", ShadowToast.getTextOfLatestToast());
     }
 
     private void initiateAFailingPurchase(int errorCode, String errorMessage)
             throws GeneralSecurityException, UnsupportedEncodingException, JSONException {
-        Product product = new Product("BAD_SKU", "bogus thing", 100, 1., "USD");
+        Product product = new Product("BAD_SKU", "bogus thing", 100, 1., "USD", 1., 0, "");
         initializeWithProducts(product);
 
         activity.requestPurchase(product);

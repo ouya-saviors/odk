@@ -41,7 +41,7 @@ public class TestOuyaFacade extends OuyaFacade {
     private OuyaResponseListener<String> receiptListListener;
     private boolean shutdownWasCalled;
     private boolean requestReceiptsWasCalled;
-    private OuyaResponseListener<String> gamerUuidListener;
+    private OuyaResponseListener<GamerInfo> gamerInfoListener;
 
     public TestOuyaFacade() {
         OuyaFacade.setInstance(this);
@@ -82,8 +82,8 @@ public class TestOuyaFacade extends OuyaFacade {
     }
 
     @Override
-    public void requestGamerUuid(OuyaResponseListener<String> gamerUuidListener) {
-        this.gamerUuidListener = gamerUuidListener;
+    public void requestGamerInfo(OuyaResponseListener<GamerInfo> gamerUuidListener) {
+        this.gamerInfoListener = gamerUuidListener;
     }
 
     @Override
@@ -170,12 +170,12 @@ public class TestOuyaFacade extends OuyaFacade {
         receiptListListener.onSuccess(receipt);
     }
 
-    public void simulateGamerUuidSuccess(String gamerUuid) {
-        gamerUuidListener.onSuccess(gamerUuid);
+    public void simulateGamerInfoSuccess(String gamerUuid, String gamerUsername) {
+        gamerInfoListener.onSuccess(new GamerInfo(gamerUuid, gamerUsername));
     }
 
-    public void simulateGamerUuidFailure(int errorCode, String errorMessage, final Bundle optionalData) {
-        gamerUuidListener.onFailure(errorCode, errorMessage, new Bundle());
+    public void simulateGamerInfoFailure(int errorCode, String errorMessage, final Bundle optionalData) {
+        gamerInfoListener.onFailure(errorCode, errorMessage, new Bundle());
     }
 
     public boolean requestReceiptsWasCalled() {

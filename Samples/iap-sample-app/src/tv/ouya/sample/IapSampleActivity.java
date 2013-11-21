@@ -196,7 +196,7 @@ public class IapSampleActivity extends Activity {
         findViewById(R.id.gamer_uuid_button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                fetchGamerUUID();
+                fetchGamerInfo();
             }
         });
 
@@ -279,7 +279,7 @@ public class IapSampleActivity extends Activity {
         if(resultCode == RESULT_OK) {
             switch (requestCode) {
                 case GAMER_UUID_AUTHENTICATION_ACTIVITY_ID:
-                    fetchGamerUUID();
+                    fetchGamerInfo();
                     break;
                 case PURCHASE_AUTHENTICATION_ACTIVITY_ID:
                     restartInterruptedPurchase();
@@ -356,13 +356,13 @@ public class IapSampleActivity extends Activity {
         });
     }
 
-    private void fetchGamerUUID() {
-        ouyaFacade.requestGamerUuid(new CancelIgnoringOuyaResponseListener<String>() {
+    private void fetchGamerInfo() {
+        ouyaFacade.requestGamerInfo(new CancelIgnoringOuyaResponseListener<GamerInfo>() {
             @Override
-            public void onSuccess(String result) {
+            public void onSuccess(GamerInfo result) {
                 new AlertDialog.Builder(IapSampleActivity.this)
                         .setTitle(getString(R.string.alert_title))
-                        .setMessage(result)
+                        .setMessage(getResources().getString(R.string.userinfo, result.getUsername(), result.getUuid()))
                         .setPositiveButton(R.string.ok, null)
                         .show();
             }
@@ -378,14 +378,14 @@ public class IapSampleActivity extends Activity {
                                         new OuyaResponseListener<Void>() {
                                             @Override
                                             public void onSuccess(Void result) {
-                                                fetchGamerUUID();   // Retry the fetch if the error was handled.
+                                                fetchGamerInfo();   // Retry the fetch if the error was handled.
                                             }
 
                                             @Override
                                             public void onFailure(int errorCode, String errorMessage,
                                                                   Bundle optionalData) {
                                                 showError("Unable to fetch gamer UUID (error " +
-                                                         errorCode + ": " + errorMessage + ")");
+                                                        errorCode + ": " + errorMessage + ")");
                                             }
 
                                             @Override
@@ -557,11 +557,7 @@ public class IapSampleActivity extends Activity {
             List<Receipt> receipts;
             try {
                 JSONObject response = new JSONObject(receiptResponse);
-                if(response.has("key") && response.has("iv")) {
-                    receipts = helper.decryptReceiptResponse(response, mPublicKey);
-                } else {
-                    receipts = helper.parseJSONReceiptResponse(receiptResponse);
-                }
+                receipts = helper.decryptReceiptResponse(response, mPublicKey);
             } catch (ParseException e) {
                 throw new RuntimeException(e);
             } catch (JSONException e) {
@@ -653,22 +649,14 @@ public class IapSampleActivity extends Activity {
                 OuyaEncryptionHelper helper = new OuyaEncryptionHelper();
 
                 JSONObject response = new JSONObject(result);
-                if(response.has("key") && response.has("iv")) {
-                    id = helper.decryptPurchaseResponse(response, mPublicKey);
-                    Product storedProduct;
-                    synchronized (mOutstandingPurchaseRequests) {
-                        storedProduct = mOutstandingPurchaseRequests.remove(id);
-                    }
-                    if(storedProduct == null || !storedProduct.getIdentifier().equals(mProduct.getIdentifier())) {
-                        onFailure(OuyaErrorCodes.THROW_DURING_ON_SUCCESS, "Purchased product is not the same as purchase request product", Bundle.EMPTY);
-                        return;
-                    }
-                } else {
-                    product = new Product(new JSONObject(result));
-                    if(!mProduct.getIdentifier().equals(product.getIdentifier())) {
-                        onFailure(OuyaErrorCodes.THROW_DURING_ON_SUCCESS, "Purchased product is not the same as purchase request product", Bundle.EMPTY);
-                        return;
-                    }
+                id = helper.decryptPurchaseResponse(response, mPublicKey);
+                Product storedProduct;
+                synchronized (mOutstandingPurchaseRequests) {
+                    storedProduct = mOutstandingPurchaseRequests.remove(id);
+                }
+                if(storedProduct == null || !storedProduct.getIdentifier().equals(mProduct.getIdentifier())) {
+                    onFailure(OuyaErrorCodes.THROW_DURING_ON_SUCCESS, "Purchased product is not the same as purchase request product", Bundle.EMPTY);
+                    return;
                 }
             } catch (ParseException e) {
                 onFailure(OuyaErrorCodes.THROW_DURING_ON_SUCCESS, e.getMessage(), Bundle.EMPTY);

@@ -299,22 +299,13 @@ public class OptionsActivity extends Activity {
                     OuyaEncryptionHelper helper = new OuyaEncryptionHelper();
 
                     JSONObject response = new JSONObject(result);
-                    if(response.has("key") && response.has("iv")) {
-                        String responseUUID = helper.decryptPurchaseResponse(response, mPublicKey);
-                        synchronized (mOutstandingPurchaseRequests) {
-                            responseProductId = mOutstandingPurchaseRequests.remove(responseUUID);
-                        }
-                        if(responseProductId == null || !responseProductId.equals(productId)) {
-                            onFailure(OuyaErrorCodes.THROW_DURING_ON_SUCCESS, "Purchased product is not the same as purchase request product", Bundle.EMPTY);
-                            return;
-                        }
-                    } else {
-                        Product product = new Product(new JSONObject(result));
-                        responseProductId = product.getIdentifier();
-                        if(!productId.equals(responseProductId)) {
-                            onFailure(OuyaErrorCodes.THROW_DURING_ON_SUCCESS, "Purchased product is not the same as purchase request product", Bundle.EMPTY);
-                            return;
-                        }
+                    String responseUUID = helper.decryptPurchaseResponse(response, mPublicKey);
+                    synchronized (mOutstandingPurchaseRequests) {
+                        responseProductId = mOutstandingPurchaseRequests.remove(responseUUID);
+                    }
+                    if(responseProductId == null || !responseProductId.equals(productId)) {
+                        onFailure(OuyaErrorCodes.THROW_DURING_ON_SUCCESS, "Purchased product is not the same as purchase request product", Bundle.EMPTY);
+                        return;
                     }
                 } catch (JSONException e) {
                     onFailure(OuyaErrorCodes.THROW_DURING_ON_SUCCESS, e.getMessage(), Bundle.EMPTY);
