@@ -1,3 +1,11 @@
+ODK 1.0.11 - TBA
+=======================
+- Updated test framework, libraries and licenses
+
+ODK 1.0.10 - November 21, 2013
+=======================
+- Added OuyaFacade.requestGamerInfo to provide access to the gamer's username
+
 ODK 1.0.9 - October 8, 2013
 =======================
 - Can finally hide the mouse cursor!  Use this new method: OuyaController.showCursor
