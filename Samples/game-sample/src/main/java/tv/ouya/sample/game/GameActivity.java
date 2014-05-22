@@ -16,15 +16,16 @@
 
 package tv.ouya.sample.game;
 
-import android.app.Activity;
+import android.app.AlertDialog;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
+import tv.ouya.console.api.OuyaActivity;
 import tv.ouya.console.api.OuyaController;
 
-public class GameActivity extends Activity {
+public class GameActivity extends OuyaActivity {
     private Player[] players;
 
     static public Boolean pauseInput = new Boolean(false);
@@ -32,6 +33,9 @@ public class GameActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // Call this once to clear out a pending "button changed this frame" flags leftover from the user being in the menus
+        OuyaController.startOfFrame();
 
         setContentView(R.layout.game);
         Button quitGame = (Button) findViewById(R.id.quit_button);
@@ -104,9 +108,8 @@ public class GameActivity extends Activity {
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-        boolean handled = false;
         synchronized (pauseInput) {
-            handled = OuyaController.onKeyDown(keyCode, event);
+            super.onKeyDown(keyCode, event);
             findOrCreatePlayer(event.getDeviceId());
         }
 
@@ -114,23 +117,33 @@ public class GameActivity extends Activity {
             finish();
         }
 
-        return handled || super.onKeyDown(keyCode, event);
+        return true;
     }
 
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
-        boolean handled = false;
         synchronized (pauseInput) {
-            handled = OuyaController.onKeyUp(keyCode, event);
+            super.onKeyUp(keyCode, event);
         }
-        return handled || super.onKeyUp(keyCode, event);
+
+        if (keyCode == OuyaController.BUTTON_MENU) {
+            int playerNum = OuyaController.getPlayerNumByDeviceId(event.getDeviceId());
+            String menuButtonName = OuyaController.getButtonData(OuyaController.BUTTON_MENU).buttonName;
+            new AlertDialog.Builder(this)
+                    .setTitle("Menu Pressed")
+                    .setMessage("Player " + playerNum + " pressed the " + menuButtonName + " button")
+                    .setPositiveButton(android.R.string.ok, null)
+                    .create()
+                    .show();
+        }
+
+        return true;
     }
 
     @Override
     public boolean onGenericMotionEvent(MotionEvent event) {
-        boolean handled = false;
         synchronized (pauseInput) {
-            handled = OuyaController.onGenericMotionEvent(event);
+            super.onGenericMotionEvent(event);
         }
 
         OuyaController c = OuyaController.getControllerByDeviceId(event.getDeviceId());
@@ -143,7 +156,7 @@ public class GameActivity extends Activity {
             }
         }
 
-        return handled || super.onGenericMotionEvent(event);
+        return true;
     }
 
     private Player findOrCreatePlayer(int deviceId) {

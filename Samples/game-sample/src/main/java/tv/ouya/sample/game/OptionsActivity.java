@@ -16,7 +16,6 @@
 
 package tv.ouya.sample.game;
 
-import android.app.Activity;
 import android.os.Bundle;
 import android.util.Base64;
 import android.util.Log;
@@ -48,7 +47,7 @@ import java.util.Map;
 import static tv.ouya.sample.game.Options.Level.*;
 import static tv.ouya.sample.game.Options.getInstance;
 
-public class OptionsActivity extends Activity {
+public class OptionsActivity extends OuyaActivity {
     /**
      * The Log Tag for this Activity
      */

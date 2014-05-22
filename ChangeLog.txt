@@ -1,4 +1,12 @@
-ODK 1.0.11 - TBA
+ODK 1.0.12 - May 20, 2014
+=======================
+- New OuyaFacade methods to support OUYA Everywhere:
+-- isRunningOnOUYAHardware() -- same method as before, returns true if-and-only-if running on the OUYA console itself.
+-- isRunningOnOUYASupportedHardware() -- returns true if running on OUYA-support hardware (OUYA, M.O.J.O., etc).  Is implemented to be "future proof" as new hardware platforms are supported (ie: games won't need to be recompiled for this flag to be set correctly in the future).
+-- getDeviceHardware() -- returns information on the current device: name/model/enum.  Can be used if you need device specific checks.
+- New controller mapping API to support different controllers on different hardware (see the OUYA Everywhere developer document for more information)
+
+ODK 1.0.11 - February 4, 2014
 =======================
 - Updated test framework, libraries and licenses
 

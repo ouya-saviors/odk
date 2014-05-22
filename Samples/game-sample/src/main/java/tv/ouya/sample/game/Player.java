@@ -89,10 +89,6 @@ public class Player extends RenderObject {
         return isVisible;
     }
 
-    public void shoot(float dirX, float dirY) {
-        shootDir.set(dirX, dirY);
-    }
-
     public void die() {
         isDead = true;
     }
@@ -210,6 +206,9 @@ public class Player extends RenderObject {
         getShootDirFromController(c);
 
         if (!isDead && forwardAmount != 0.0f) {
+            if (c.getButton(OuyaController.BUTTON_L2) || c.getButton(OuyaController.BUTTON_R2)) {
+                forwardAmount *= -0.75f;
+            }
             goForward(forwardAmount);
         }
 
