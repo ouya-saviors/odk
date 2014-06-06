@@ -1,3 +1,7 @@
+ODK 1.0.13 - June 5, 2014
+=======================
+- Minor fix for input remapping with native Android widgets
+
 ODK 1.0.12 - May 20, 2014
 =======================
 - New OuyaFacade methods to support OUYA Everywhere:
