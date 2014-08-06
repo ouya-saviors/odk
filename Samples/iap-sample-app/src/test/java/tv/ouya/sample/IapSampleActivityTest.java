@@ -94,7 +94,7 @@ public class IapSampleActivityTest {
 
     @Test
     public void canShowProductInListView() throws Exception {
-        Product product = new Product("SKU1", "red sock", 100, 1., "USD", 1., 0, "", "Sample Developer");
+        Product product = new Product("SKU1", "red sock", 100, 1., "USD", 1., 0, "", "Sample    Developer", Product.Type.ENTITLEMENT);
         mActivity.addProducts(Arrays.asList(product));
         assertThat("red sock - $1.00").isEqualTo(getButton(0).getText().toString());
     }
@@ -105,9 +105,9 @@ public class IapSampleActivityTest {
 
     @Test
     public void shouldGetProductsFromGateway() throws Exception {
-        Product product1 = new Product("SKU1", "red sock", 100, 1., "USD", 1., 0, "", "Sample Developer");
-        Product product2 = new Product("SKU2", "green sock", 100, 1., "USD", 1., 0, "", "Sample Developer");
-        Product product3 = new Product("SKU3", "blue sock", 100, 1., "USD", 1., 0, "", "Sample Developer");
+        Product product1 = new Product("SKU1", "red sock", 100, 1., "USD", 1., 0, "", "Sample Developer", Product.Type.ENTITLEMENT);
+        Product product2 = new Product("SKU2", "green sock", 100, 1., "USD", 1., 0, "", "Sample Developer", Product.Type.ENTITLEMENT);
+        Product product3 = new Product("SKU3", "blue sock", 100, 1., "USD", 1., 0, "", "Sample Developer", Product.Type.ENTITLEMENT);
         mOUYAFacade.addProducts(product1, product2, product3);
         mOUYAFacade.expectRequestedIDs(IapSampleActivity.PRODUCT_IDENTIFIER_LIST);
         callOnCreateAndFindViews();
@@ -119,7 +119,7 @@ public class IapSampleActivityTest {
     @Ignore
     @Test
     public void redisplayingReceiptsShouldClearOutPreviousReceipts() throws Exception {
-        Product product = new Product("SKU1", "red sock", 100, 1., "USD", 1., 0, "", "Sample Developer");
+        Product product = new Product("SKU1", "red sock", 100, 1., "USD", 1., 0, "", "Sample Developer", Product.Type.ENTITLEMENT);
         initializeWithProducts(product);
 
         ArrayList<Receipt> receipts = new ArrayList<Receipt>();
@@ -201,7 +201,7 @@ public class IapSampleActivityTest {
 
     private void initiateAFailingPurchase(int errorCode, String errorMessage)
             throws GeneralSecurityException, UnsupportedEncodingException, JSONException {
-        Product product = new Product("BAD_SKU", "bogus thing", 100, 1., "USD", 1., 0, "", "Sample Developer");
+        Product product = new Product("BAD_SKU", "bogus thing", 100, 1., "USD", 1., 0, "", "Sample Developer", Product.Type.ENTITLEMENT);
         initializeWithProducts(product);
 
         mActivity.requestPurchase(product);

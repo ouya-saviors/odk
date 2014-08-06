@@ -106,6 +106,7 @@ public class IapSampleActivity extends Activity {
         new Purchasable("long_sword"),
         new Purchasable("sharp_axe"),
         new Purchasable("awesome_sauce"),
+        new Purchasable("cat_facts"),
         new Purchasable("__DECLINED__THIS_PURCHASE")
     );
 

@@ -31,6 +31,15 @@ android {
         }
     }
 
+    signingConfigs {
+        debug {
+            storeFile file("../sample.keystore")
+            storePassword "password"
+            keyAlias "iap"
+            keyPassword "password"
+        }
+    }
+
     defaultConfig {
         targetSdkVersion 16
         minSdkVersion 16

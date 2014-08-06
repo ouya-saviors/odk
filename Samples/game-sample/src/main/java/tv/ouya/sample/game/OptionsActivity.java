@@ -156,6 +156,10 @@ public class OptionsActivity extends OuyaActivity {
     }
 
     private void requestReceipts() {
+        if (!OuyaFacade.isRunningOnOUYASupportedHardware(this)) {
+            Toast.makeText(this, "You're not running on supported hardware!", Toast.LENGTH_SHORT).show();
+        }
+
         mOuyaFacade.requestReceipts(new OuyaResponseListener<String>() {
             @Override
             public void onSuccess(String receiptResponse) {
