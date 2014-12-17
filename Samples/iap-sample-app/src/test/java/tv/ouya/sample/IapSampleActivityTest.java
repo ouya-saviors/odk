@@ -36,6 +36,7 @@ import org.robolectric.util.ActivityController;
 import tv.ouya.console.api.OuyaFacade;
 import tv.ouya.console.api.Product;
 import tv.ouya.console.api.Receipt;
+import tv.ouya.console.api.PurchaseResult;
 import tv.ouya.console.api.TestOuyaFacade;
 
 import java.io.UnsupportedEncodingException;
@@ -64,11 +65,17 @@ public class IapSampleActivityTest {
         assertThat(OuyaFacade.getInstance()).isEqualTo(mOUYAFacade);
 
         mController = Robolectric.buildActivity(IapSampleActivity.class);
-        mActivity = mController.create()
-                .start()
-                .resume()
-                .visible()
-                .get();
+        if(mController == null) throw new RuntimeException();
+        mController = mController.create();
+        mController = mController.start();
+        mController = mController.resume();
+        mController = mController.visible();
+        mActivity = mController.get();
+//        mActivity = mController.create()
+//                .start()
+//                .resume()
+//                .visible()
+//                .get();
         callOnCreateAndFindViews();
     }
 
@@ -130,7 +137,8 @@ public class IapSampleActivityTest {
         assertThat(((ListView)mActivity.findViewById(R.id.receipts)).getAdapter().getCount()).isEqualTo(2);
 
         mActivity.requestPurchase(product);
-        mOUYAFacade.simulatePurchaseSuccessResponse("{ \"identifier\":\"SKU1\", \"name\":\"red sock\", \"priceInCents\":\"100\"}");
+//        mOUYAFacade.simulatePurchaseSuccessResponse("{ \"identifier\":\"SKU1\", \"name\":\"red sock\", \"priceInCents\":\"100\"}");
+        mOUYAFacade.simulatePurchaseSuccessResponse(new PurchaseResult(0, "uuid", "SKU1"));
 
         receipts = new ArrayList<Receipt>();
         receipts.add(newReceipt("sku1", 123, "2001-12-31T16:00:00Z", "gamer", "uuid", 1.23, "USD"));

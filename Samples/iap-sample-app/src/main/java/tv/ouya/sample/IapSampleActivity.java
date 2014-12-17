@@ -22,7 +22,6 @@ import android.app.AlertDialog;
 import android.content.*;
 import android.os.Bundle;
 import android.os.Parcelable;
-import android.util.Base64;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -32,21 +31,10 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
 import org.json.JSONException;
-import org.json.JSONObject;
 import tv.ouya.console.api.*;
 
-import javax.crypto.Cipher;
-import javax.crypto.SecretKey;
-import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.SecretKeySpec;
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.GeneralSecurityException;
-import java.security.KeyFactory;
-import java.security.PublicKey;
-import java.security.SecureRandom;
-import java.security.spec.X509EncodedKeySpec;
-import java.text.ParseException;
 import java.util.*;
 
 import static tv.ouya.console.api.OuyaController.BUTTON_O;
@@ -57,7 +45,7 @@ public class IapSampleActivity extends Activity {
      * The tag for log messages
      */
 
-    private static final String LOG_TAG = "IapSample";
+    private static final String LOG_TAG = "OUYAIapSample";
 
     /**
      * Log onto the developer website (you should have received a URL, a username and a password in email)
@@ -166,18 +154,16 @@ public class IapSampleActivity extends Activity {
         }
     };
 
-    /**
-     * The cryptographic key for this application
-     */
-
-    private PublicKey mPublicKey;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        Bundle developerInfo = new Bundle();
+        developerInfo.putString(OuyaFacade.OUYA_DEVELOPER_ID, DEVELOPER_ID);
+        developerInfo.putByteArray(OuyaFacade.OUYA_DEVELOPER_PUBLIC_KEY, APPLICATION_KEY);
+
         ouyaFacade = OuyaFacade.getInstance();
-        ouyaFacade.init(this, DEVELOPER_ID);
+        ouyaFacade.init(this, developerInfo);
 
         // Uncomment this line to test against the server using "fake" credits.
         // This will also switch over to a separate "test" purchase history.
@@ -231,15 +217,6 @@ public class IapSampleActivity extends Activity {
         if(mReceiptList == null) {
             receiptListView.setAdapter(new ReceiptAdapter(this, new Receipt[0]));
         }
-
-        // Create a PublicKey object from the key data downloaded from the developer portal.
-        try {
-            X509EncodedKeySpec keySpec = new X509EncodedKeySpec(APPLICATION_KEY);
-            KeyFactory keyFactory = KeyFactory.getInstance("RSA");
-            mPublicKey = keyFactory.generatePublic(keySpec);
-        } catch (Exception e) {
-            Log.e(LOG_TAG, "Unable to create encryption key", e);
-        }
     }
 
     /**
@@ -282,6 +259,13 @@ public class IapSampleActivity extends Activity {
 
     @Override
     protected void onActivityResult(final int requestCode, final int resultCode, final Intent data) {
+        Log.d(LOG_TAG, "Processing activity result");
+
+        // Forward this result to the facade, in case it is waiting for any activity results
+        if(ouyaFacade.processActivityResult(requestCode, resultCode, data)) {
+            return;
+        }
+
         if(resultCode == RESULT_OK) {
             switch (requestCode) {
                 case GAMER_UUID_AUTHENTICATION_ACTIVITY_ID:
@@ -344,10 +328,11 @@ public class IapSampleActivity extends Activity {
     /**
      * Get the list of products the user can purchase from the server.
      */
-    private void requestProducts() {
-        ouyaFacade.requestProductList(PRODUCT_IDENTIFIER_LIST, new CancelIgnoringOuyaResponseListener<ArrayList<Product>>() {
+    private synchronized void requestProducts() {
+        Log.d(LOG_TAG, "Requesting products");
+        ouyaFacade.requestProductList(this, PRODUCT_IDENTIFIER_LIST, new CancelIgnoringOuyaResponseListener<List<Product>>() {
             @Override
-            public void onSuccess(final ArrayList<Product> products) {
+            public void onSuccess(final List<Product> products) {
                 mProductList = products;
                 addProducts();
             }
@@ -362,8 +347,9 @@ public class IapSampleActivity extends Activity {
         });
     }
 
-    private void fetchGamerInfo() {
-        ouyaFacade.requestGamerInfo(new CancelIgnoringOuyaResponseListener<GamerInfo>() {
+    private synchronized void fetchGamerInfo() {
+        Log.d(LOG_TAG, "Requesting gamerinfo");
+        ouyaFacade.requestGamerInfo(this, new CancelIgnoringOuyaResponseListener<GamerInfo>() {
             @Override
             public void onSuccess(GamerInfo result) {
                 new AlertDialog.Builder(IapSampleActivity.this)
@@ -411,8 +397,9 @@ public class IapSampleActivity extends Activity {
      * Request the receipts from the users previous purchases from the server.
      */
 
-    private void requestReceipts() {
-        ouyaFacade.requestReceipts(new ReceiptListener());
+    private synchronized void requestReceipts() {
+        Log.d(LOG_TAG, "Requesting receipts");
+        ouyaFacade.requestReceipts(this, new ReceiptListener());
     }
 
     /**
@@ -470,47 +457,14 @@ public class IapSampleActivity extends Activity {
      */
     public void requestPurchase(final Product product)
         throws GeneralSecurityException, UnsupportedEncodingException, JSONException {
-        SecureRandom sr = SecureRandom.getInstance("SHA1PRNG");
 
-        // This is an ID that allows you to associate a successful purchase with
-        // it's original request. The server does nothing with this string except
-        // pass it back to you, so it only needs to be unique within this instance
-        // of your app to allow you to pair responses with requests.
-        String uniqueId = Long.toHexString(sr.nextLong());
-
-        JSONObject purchaseRequest = new JSONObject();
-        purchaseRequest.put("uuid", uniqueId);
-        purchaseRequest.put("identifier", product.getIdentifier());
-        purchaseRequest.put("testing", "true"); // This value is only needed for testing, not setting it results in a live purchase
-        String purchaseRequestJson = purchaseRequest.toString();
-
-        byte[] keyBytes = new byte[16];
-        sr.nextBytes(keyBytes);
-        SecretKey key = new SecretKeySpec(keyBytes, "AES");
-
-        byte[] ivBytes = new byte[16];
-        sr.nextBytes(ivBytes);
-        IvParameterSpec iv = new IvParameterSpec(ivBytes);
-
-        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding", "BC");
-        cipher.init(Cipher.ENCRYPT_MODE, key, iv);
-        byte[] payload = cipher.doFinal(purchaseRequestJson.getBytes("UTF-8"));
-
-        cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding", "BC");
-        cipher.init(Cipher.ENCRYPT_MODE, mPublicKey);
-        byte[] encryptedKey = cipher.doFinal(keyBytes);
-
-        Purchasable purchasable =
-                new Purchasable(
-                        product.getIdentifier(),
-                        Base64.encodeToString(encryptedKey, Base64.NO_WRAP),
-                        Base64.encodeToString(ivBytes, Base64.NO_WRAP),
-                        Base64.encodeToString(payload, Base64.NO_WRAP) );
+        Purchasable purchasable = new Purchasable(product.getIdentifier());
+        String orderId = purchasable.getOrderId();
 
         synchronized (mOutstandingPurchaseRequests) {
-            mOutstandingPurchaseRequests.put(uniqueId, product);
+            mOutstandingPurchaseRequests.put(orderId, product);
         }
-        ouyaFacade.requestPurchase(purchasable, new PurchaseListener(product));
+        ouyaFacade.requestPurchase(this, purchasable, new PurchaseListener(product));
     }
 
     @Override
@@ -550,7 +504,7 @@ public class IapSampleActivity extends Activity {
     /**
      * The callback for when the list of user receipts has been requested.
      */
-    private class ReceiptListener implements OuyaResponseListener<String>
+    private class ReceiptListener implements OuyaResponseListener<Collection<Receipt>>
     {
         /**
          * Handle the successful fetching of the data for the receipts from the server.
@@ -558,29 +512,8 @@ public class IapSampleActivity extends Activity {
          * @param receiptResponse The response from the server.
          */
         @Override
-        public void onSuccess(String receiptResponse) {
-            OuyaEncryptionHelper helper = new OuyaEncryptionHelper();
-            List<Receipt> receipts;
-            try {
-                JSONObject response = new JSONObject(receiptResponse);
-                receipts = helper.decryptReceiptResponse(response, mPublicKey);
-            } catch (ParseException e) {
-                throw new RuntimeException(e);
-            } catch (JSONException e) {
-                throw new RuntimeException(e);
-            } catch (GeneralSecurityException e) {
-                throw new RuntimeException(e);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-            Collections.sort(receipts, new Comparator<Receipt>() {
-                @Override
-                public int compare(Receipt lhs, Receipt rhs) {
-                    return rhs.getPurchaseDate().compareTo(lhs.getPurchaseDate());
-                }
-            });
-
-            mReceiptList = receipts;
+        public void onSuccess(Collection<Receipt> receipts) {
+            mReceiptList = new ArrayList<Receipt>(receipts);
             IapSampleActivity.this.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
@@ -626,7 +559,7 @@ public class IapSampleActivity extends Activity {
      * @see tv.ouya.console.api.CancelIgnoringOuyaResponseListener
      * @see tv.ouya.console.api.OuyaResponseListener#onCancel()
      */
-    private class PurchaseListener implements OuyaResponseListener<String> {
+    private class PurchaseListener implements OuyaResponseListener<PurchaseResult> {
         /**
          * The ID of the product the user is trying to purchase. This is used in the
          * onFailure method to start a re-purchase if they user wishes to do so.
@@ -648,37 +581,24 @@ public class IapSampleActivity extends Activity {
          * @param result The response from the server.
          */
         @Override
-        public void onSuccess(String result) {
-            Product product;
-            String id;
-            try {
-                OuyaEncryptionHelper helper = new OuyaEncryptionHelper();
+        public void onSuccess(PurchaseResult result) {
 
-                JSONObject response = new JSONObject(result);
-                id = helper.decryptPurchaseResponse(response, mPublicKey);
-                Product storedProduct;
-                synchronized (mOutstandingPurchaseRequests) {
-                    storedProduct = mOutstandingPurchaseRequests.remove(id);
-                }
-                if(storedProduct == null || !storedProduct.getIdentifier().equals(mProduct.getIdentifier())) {
-                    onFailure(OuyaErrorCodes.THROW_DURING_ON_SUCCESS, "Purchased product is not the same as purchase request product", Bundle.EMPTY);
-                    return;
-                }
-            } catch (ParseException e) {
-                onFailure(OuyaErrorCodes.THROW_DURING_ON_SUCCESS, e.getMessage(), Bundle.EMPTY);
-            } catch (JSONException e) {
-                onFailure(OuyaErrorCodes.THROW_DURING_ON_SUCCESS, e.getMessage(), Bundle.EMPTY);
-                return;
-            } catch (IOException e) {
-                onFailure(OuyaErrorCodes.THROW_DURING_ON_SUCCESS, e.getMessage(), Bundle.EMPTY);
-                return;
-            } catch (GeneralSecurityException e) {
-                onFailure(OuyaErrorCodes.THROW_DURING_ON_SUCCESS, e.getMessage(), Bundle.EMPTY);
+            Product storedProduct;
+            synchronized (mOutstandingPurchaseRequests) {
+                storedProduct = mOutstandingPurchaseRequests.remove(result.getOrderId());
+            }
+
+            // If the cached product doesn't have the same ProductID that was actually purchased OR
+            // If the cached product doesn't have the same ProductID that we wanted to be purchased
+            // Then error out
+            if (storedProduct == null ||
+                !storedProduct.getIdentifier().equals(result.getProductIdentifier()) ||
+                !storedProduct.getIdentifier().equals(mProduct.getIdentifier())) {
+                onFailure(OuyaErrorCodes.THROW_DURING_ON_SUCCESS, "Purchased product is not the same as purchase request product", Bundle.EMPTY);
                 return;
             }
 
             requestReceipts();
-
         }
 
         @Override

@@ -16,28 +16,28 @@
 
 package tv.ouya.console.api;
 
+import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
-import org.codehaus.jackson.map.ObjectMapper;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 import static junit.framework.Assert.assertEquals;
 
 public class TestOuyaFacade extends OuyaFacade {
     private ArrayList<Product> mProducts = new ArrayList<Product>();
-    private OuyaResponseListener<ArrayList<Product>> mProductListListener;
+    private OuyaResponseListener<List<Product>> mProductListListener;
     private List<Purchasable> mExpectedProductListIds;
     private Purchasable mPurchaseRequestId;
     private Purchasable mExpectedPurchaseRequestId;
-    private OuyaResponseListener<String> mPurchaseRequestListener;
+    private OuyaResponseListener<PurchaseResult> mPurchaseRequestListener;
     private Context mContextFromInit;
     private String mDeveloperId;
-    private String mReceipt;
-    private OuyaResponseListener<String> mReceiptListListener;
+    private Collection<Receipt> mReceipt;
+    private OuyaResponseListener<Collection<Receipt>> mReceiptListListener;
     private boolean mShutdownWasCalled;
     private boolean mRequestReceiptsWasCalled;
     private OuyaResponseListener<GamerInfo> mGamerInfoListener;
@@ -52,13 +52,13 @@ public class TestOuyaFacade extends OuyaFacade {
     }
 
     @Override
-    public void init(Context context, String developerId) {
+    public void init(Context context, Bundle data) {
         mContextFromInit = context;
-        mDeveloperId = developerId;
+        mDeveloperId = data.getString(OuyaFacade.OUYA_DEVELOPER_ID);
     }
 
     @Override
-    public void requestProductList(List<Purchasable> purchasables, OuyaResponseListener<ArrayList<Product>> productListListener) {
+    public void requestProductList(Activity currentActivity, List<Purchasable> purchasables, OuyaResponseListener<List<Product>> productListListener) {
         mProductListListener = productListListener;
         if (mExpectedProductListIds != null) {
             assertEquals(mExpectedProductListIds, purchasables);
@@ -66,7 +66,7 @@ public class TestOuyaFacade extends OuyaFacade {
     }
 
     @Override
-    public void requestPurchase(Purchasable purchasable, OuyaResponseListener<String> purchaseListener) {
+    public void requestPurchase(Activity currentActivity, Purchasable purchasable, OuyaResponseListener<PurchaseResult> purchaseListener) {
         mPurchaseRequestId = purchasable;
         mPurchaseRequestListener = purchaseListener;
         if (mExpectedPurchaseRequestId != null) {
@@ -75,13 +75,13 @@ public class TestOuyaFacade extends OuyaFacade {
     }
 
     @Override
-    public void requestReceipts(OuyaResponseListener<String> receiptListListener) {
+    public void requestReceipts(Activity currentActivity, OuyaResponseListener<Collection<Receipt>> receiptListListener) {
         mReceiptListListener = receiptListListener;
         mRequestReceiptsWasCalled = true;
     }
 
     @Override
-    public void requestGamerInfo(OuyaResponseListener<GamerInfo> gamerUuidListener) {
+    public void requestGamerInfo(Activity currentActivity, OuyaResponseListener<GamerInfo> gamerUuidListener) {
         mGamerInfoListener = gamerUuidListener;
     }
 
@@ -110,7 +110,7 @@ public class TestOuyaFacade extends OuyaFacade {
         return mShutdownWasCalled;
     }
 
-    public void simulatePurchaseSuccessResponse(String product) {
+    public void simulatePurchaseSuccessResponse(PurchaseResult product) {
         mPurchaseRequestListener.onSuccess(product);
     }
 
@@ -144,25 +144,7 @@ public class TestOuyaFacade extends OuyaFacade {
     }
 
     public void addReceipts(ArrayList<Receipt> receipts) {
-        OuyaEncryptionHelper helper = new OuyaEncryptionHelper();
-        List<Receipt> currentReceipts = new ArrayList<Receipt>();
-        try {
-            if (mReceipt != null && !mReceipt.isEmpty()) {
-                currentReceipts = helper.parseJSONReceiptResponse(mReceipt);
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        currentReceipts.addAll(receipts);
-
-        Receipt[] receiptArray = currentReceipts.toArray(new Receipt[currentReceipts.size()]);
-        ObjectMapper mapper = new ObjectMapper();
-        try {
-            mReceipt = mapper.writeValueAsString(receiptArray);
-            // TODO: add fake encryption here (and remove the "if" in decryptReceiptResponse)
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        mReceipt = receipts;
     }
 
     public void simulateReceiptListSuccess() {

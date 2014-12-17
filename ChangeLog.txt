@@ -1,3 +1,14 @@
+ODK 2.0.1 - December 16, 2014
+=======================
+ - Add sample app for Community Content (Samples/cc-sample)
+
+ODK 2.0.0 - October 15, 2014
+=======================
+- More improvements to the controller mapping logic to support even more hardware
+- Non-backwards compatable update to OuyaFacade, see 'Upgrading to 2.0' in the OUYA documentation. (https://devs.ouya.tv/developers/docs)
+- New interface to OuyaInutMapper that doesn't require an Activity to be passed in
+- New set of APIs for Community Content!
+
 ODK 1.0.14 - August 6, 2014
 =======================
 - New static OuyaFacade.isRunningOnOUYASupportedHardware method

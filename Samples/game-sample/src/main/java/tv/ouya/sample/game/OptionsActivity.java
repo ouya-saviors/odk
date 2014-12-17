@@ -17,31 +17,20 @@
 package tv.ouya.sample.game;
 
 import android.os.Bundle;
-import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.RadioButton;
 import android.widget.Toast;
 import org.json.JSONException;
-import org.json.JSONObject;
 import tv.ouya.console.api.*;
 
-import javax.crypto.Cipher;
-import javax.crypto.SecretKey;
-import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.security.GeneralSecurityException;
-import java.security.KeyFactory;
-import java.security.PublicKey;
-import java.security.SecureRandom;
-import java.security.spec.X509EncodedKeySpec;
-import java.text.ParseException;
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import static tv.ouya.sample.game.Options.Level.*;
@@ -72,15 +61,8 @@ public class OptionsActivity extends OuyaActivity {
     private OuyaFacade mOuyaFacade;
 
     /**
-     * The cryptographic key for this application
-     */
-
-    private PublicKey mPublicKey;
-
-    /**
      * The outstanding purchase request UUIDs mapped to the purchasable the request relates to.
      */
-
     private final Map<String, String> mOutstandingPurchaseRequests = new HashMap<String, String>();
 
     /**
@@ -116,7 +98,11 @@ public class OptionsActivity extends OuyaActivity {
         toggleProgressIndicator(true);
 
         mOuyaFacade = OuyaFacade.getInstance();
-        mOuyaFacade.init(this, DEVELOPER_ID);
+
+        Bundle developerInfo = new Bundle();
+        developerInfo.putString(OuyaFacade.OUYA_DEVELOPER_ID, DEVELOPER_ID);
+        developerInfo.putByteArray(OuyaFacade.OUYA_DEVELOPER_PUBLIC_KEY, applicationKey);
+        mOuyaFacade.init(this, developerInfo);
 
         String prevSelectedLevel = mOuyaFacade.getGameData(PREV_SELECTED_LEVEL_KEY);
         if (prevSelectedLevel != null) {
@@ -133,14 +119,6 @@ public class OptionsActivity extends OuyaActivity {
                 finish();
             }
         });
-
-        X509EncodedKeySpec keySpec = new X509EncodedKeySpec(applicationKey);
-        try {
-            KeyFactory keyFactory = KeyFactory.getInstance("RSA");
-            mPublicKey = keyFactory.generatePublic(keySpec);
-        } catch (Exception e) {
-            Log.e(LOG_TAG, "Unable to create encryption key", e);
-        }
     }
 
     @Override
@@ -160,23 +138,9 @@ public class OptionsActivity extends OuyaActivity {
             Toast.makeText(this, "You're not running on supported hardware!", Toast.LENGTH_SHORT).show();
         }
 
-        mOuyaFacade.requestReceipts(new OuyaResponseListener<String>() {
+        mOuyaFacade.requestReceipts(this, new OuyaResponseListener<Collection<Receipt>>() {
             @Override
-            public void onSuccess(String receiptResponse) {
-                OuyaEncryptionHelper helper = new OuyaEncryptionHelper();
-                List<Receipt> receipts;
-                try {
-                    JSONObject object = new JSONObject(receiptResponse);
-                    receipts = helper.decryptReceiptResponse(object, mPublicKey);
-                } catch (ParseException e) {
-                    throw new RuntimeException(e);
-                } catch (JSONException e) {
-                    throw new RuntimeException(e);
-                } catch (GeneralSecurityException e) {
-                    throw new RuntimeException(e);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
+            public void onSuccess(Collection<Receipt> receipts) {
                 processReceipts(receipts);
             }
 
@@ -231,7 +195,7 @@ public class OptionsActivity extends OuyaActivity {
         findViewById(R.id.levels).setVisibility(progressVisible ? View.GONE : View.VISIBLE);
     }
 
-    private void processReceipts( List<Receipt> receipts ) {
+    private void processReceipts( Collection<Receipt> receipts ) {
         setNeedsPurchaseText(levelToRadioButton.get(ALLEYWAY), true);
         setNeedsPurchaseText(levelToRadioButton.get(BOXY), true);
 
@@ -254,73 +218,22 @@ public class OptionsActivity extends OuyaActivity {
         throws GeneralSecurityException, JSONException, UnsupportedEncodingException {
         final String productId = getProductIdForLevel(level);
 
-        SecureRandom sr = SecureRandom.getInstance("SHA1PRNG");
-
-        // This is an ID that allows you to associate a successful purchase with
-        // it's original request. The server does nothing with this string except
-        // pass it back to you, so it only needs to be unique within this instance
-        // of your app to allow you to pair responses with requests.
-        String uniqueId = Long.toHexString(sr.nextLong());
-
-        JSONObject purchaseRequest = new JSONObject();
-        purchaseRequest.put("uuid", uniqueId);
-        purchaseRequest.put("identifier", productId);
-        purchaseRequest.put("testing", "true"); // This value is only needed for testing, not setting it results in a live purchase
-        String purchaseRequestJson = purchaseRequest.toString();
-
-        byte[] keyBytes = new byte[16];
-        sr.nextBytes(keyBytes);
-        SecretKey key = new SecretKeySpec(keyBytes, "AES");
-
-        byte[] ivBytes = new byte[16];
-        sr.nextBytes(ivBytes);
-        IvParameterSpec iv = new IvParameterSpec(ivBytes);
-
-        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding", "BC");
-        cipher.init(Cipher.ENCRYPT_MODE, key, iv);
-        byte[] payload = cipher.doFinal(purchaseRequestJson.getBytes("UTF-8"));
-
-        cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding", "BC");
-        cipher.init(Cipher.ENCRYPT_MODE, mPublicKey);
-        byte[] encryptedKey = cipher.doFinal(keyBytes);
-
-        Purchasable purchasable =
-                new Purchasable(
-                        productId,
-                        Base64.encodeToString(encryptedKey, Base64.NO_WRAP),
-                        Base64.encodeToString(ivBytes, Base64.NO_WRAP),
-                        Base64.encodeToString(payload, Base64.NO_WRAP) );
+        Purchasable purchasable = new Purchasable(productId);
+        String orderId = purchasable.getOrderId();
 
         synchronized (mOutstandingPurchaseRequests) {
-            mOutstandingPurchaseRequests.put(uniqueId, productId);
+            mOutstandingPurchaseRequests.put(orderId, productId);
         }
-        mOuyaFacade.requestPurchase(purchasable, new OuyaResponseListener<String>() {
-            @Override
-            public void onSuccess(String result) {
-                String responseProductId;
-                try {
-                    OuyaEncryptionHelper helper = new OuyaEncryptionHelper();
 
-                    JSONObject response = new JSONObject(result);
-                    String responseUUID = helper.decryptPurchaseResponse(response, mPublicKey);
-                    synchronized (mOutstandingPurchaseRequests) {
-                        responseProductId = mOutstandingPurchaseRequests.remove(responseUUID);
-                    }
-                    if(responseProductId == null || !responseProductId.equals(productId)) {
-                        onFailure(OuyaErrorCodes.THROW_DURING_ON_SUCCESS, "Purchased product is not the same as purchase request product", Bundle.EMPTY);
-                        return;
-                    }
-                } catch (JSONException e) {
-                    onFailure(OuyaErrorCodes.THROW_DURING_ON_SUCCESS, e.getMessage(), Bundle.EMPTY);
-                    return;
-                } catch (ParseException e) {
-                    onFailure(OuyaErrorCodes.THROW_DURING_ON_SUCCESS, e.getMessage(), Bundle.EMPTY);
-                    return;
-                } catch (IOException e) {
-                    onFailure(OuyaErrorCodes.THROW_DURING_ON_SUCCESS, e.getMessage(), Bundle.EMPTY);
-                    return;
-                } catch (GeneralSecurityException e) {
-                    onFailure(OuyaErrorCodes.THROW_DURING_ON_SUCCESS, e.getMessage(), Bundle.EMPTY);
+        mOuyaFacade.requestPurchase(this, purchasable, new OuyaResponseListener<PurchaseResult>() {
+            @Override
+            public void onSuccess(PurchaseResult result) {
+                String responseProductId;
+                synchronized (mOutstandingPurchaseRequests) {
+                    responseProductId = mOutstandingPurchaseRequests.remove(result.getOrderId());
+                }
+                if(responseProductId == null || !responseProductId.equals(productId)) {
+                    onFailure(OuyaErrorCodes.THROW_DURING_ON_SUCCESS, "Purchased product is not the same as purchase request product", Bundle.EMPTY);
                     return;
                 }
 
