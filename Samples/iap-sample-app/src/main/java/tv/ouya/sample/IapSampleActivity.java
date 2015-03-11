@@ -34,6 +34,7 @@ import org.json.JSONException;
 import tv.ouya.console.api.*;
 
 import java.io.UnsupportedEncodingException;
+import java.lang.String;
 import java.security.GeneralSecurityException;
 import java.util.*;
 
@@ -54,6 +55,11 @@ public class IapSampleActivity extends Activity {
      * The current value is just a sample developer account. You should change it.
      */
     public static final String DEVELOPER_ID = "310a8f51-4d6e-4ae5-bda0-b93878e5f5d0";
+
+    // Both of these values will be emailed to you by the OUYA team after you've been
+    // selected by the OUYA team
+    public static final String XIAOMI_APP_ID = "2882303761517238170";
+    public static final String XIAOMI_APP_KEY = "5571723882170";
 
     /**
      * The application key. This is used to decrypt encrypted receipt responses. This should be replaced with the
@@ -97,6 +103,18 @@ public class IapSampleActivity extends Activity {
         new Purchasable("cat_facts"),
         new Purchasable("__DECLINED__THIS_PURCHASE")
     );
+
+
+    /**
+     * A String array of all possible product IDs.
+     */
+    public static final String[] mProductIDs = new String[] {
+            "long_sword",
+            "sharp_axe",
+            "awesome_sauce",
+            "cat_facts",
+            "__DECLINED__THIS_PURCHASE"
+    };
 
     /**
      * The saved instance state key for products
@@ -161,6 +179,13 @@ public class IapSampleActivity extends Activity {
         Bundle developerInfo = new Bundle();
         developerInfo.putString(OuyaFacade.OUYA_DEVELOPER_ID, DEVELOPER_ID);
         developerInfo.putByteArray(OuyaFacade.OUYA_DEVELOPER_PUBLIC_KEY, APPLICATION_KEY);
+
+        developerInfo.putStringArray(OuyaFacade.OUYA_PRODUCT_ID_LIST, mProductIDs);
+
+        // "tv.ouya.xiaomi_app_id"
+        developerInfo.putString(OuyaFacade.XIAOMI_APPLICATION_ID, XIAOMI_APP_ID);
+        // "tv.ouya.xiaomi_app_key"
+        developerInfo.putString(OuyaFacade.XIAOMI_APPLICATION_KEY, XIAOMI_APP_KEY);
 
         ouyaFacade = OuyaFacade.getInstance();
         ouyaFacade.init(this, developerInfo);

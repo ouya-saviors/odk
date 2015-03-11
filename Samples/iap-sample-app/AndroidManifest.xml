@@ -25,6 +25,12 @@
         android:minSdkVersion="16"
         android:targetSdkVersion="16" />
 
+    <uses-permission android:name="com.xiaomi.sdk.permission.PAYMENT"/>
+    <uses-permission android:name="android.permission.GET_TASKS"/>
+    <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
+
+    <uses-feature android:name="android.hardware.type.television" android:required="true" />
+
     <supports-screens
         android:anyDensity="true"
         android:largeScreens="true"
