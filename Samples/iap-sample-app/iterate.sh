@@ -78,7 +78,7 @@ fi
 pushd ../sdk
 
 # Do the actual build of the SDK, using the new proguard task
-gradlew -q clean createFinalRelease generateReleaseDocs
+gradlew -q clean createFinalRelease docs
 
 # Store the result, since the 'git reset' will change $?
 TMP_VAL=$?
