@@ -30,6 +30,36 @@
             android:focusable="false"
             />
 
+    <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            >
+        <TextView
+                android:id="@+id/player1"
+                android:textColor="#fff"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="8dp"/>
+        <TextView
+                android:id="@+id/player2"
+                android:textColor="#00f"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="8dp"/>
+        <TextView
+                android:id="@+id/player3"
+                android:textColor="#ff0"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="8dp"/>
+        <TextView
+                android:id="@+id/player4"
+                android:textColor="#0f0"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+    </LinearLayout>
 
     <tv.ouya.sample.game.GameView
             android:id="@+id/game_view"

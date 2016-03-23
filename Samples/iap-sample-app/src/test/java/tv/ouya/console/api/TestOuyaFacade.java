@@ -30,7 +30,7 @@ import static junit.framework.Assert.assertEquals;
 public class TestOuyaFacade extends OuyaFacade {
     private ArrayList<Product> mProducts = new ArrayList<Product>();
     private OuyaResponseListener<List<Product>> mProductListListener;
-    private List<Purchasable> mExpectedProductListIds;
+    private String[] mExpectedProductListIds;
     private Purchasable mPurchaseRequestId;
     private Purchasable mExpectedPurchaseRequestId;
     private OuyaResponseListener<PurchaseResult> mPurchaseRequestListener;
@@ -58,7 +58,7 @@ public class TestOuyaFacade extends OuyaFacade {
     }
 
     @Override
-    public void requestProductList(Activity currentActivity, List<Purchasable> purchasables, OuyaResponseListener<List<Product>> productListListener) {
+    public void requestProductList(Activity currentActivity, String[] purchasables, OuyaResponseListener<List<Product>> productListListener) {
         mProductListListener = productListListener;
         if (mExpectedProductListIds != null) {
             assertEquals(mExpectedProductListIds, purchasables);
@@ -94,7 +94,7 @@ public class TestOuyaFacade extends OuyaFacade {
         mProductListListener.onSuccess(mProducts);
     }
 
-    public void expectRequestedIDs(List<Purchasable> expectedIDs) {
+    public void expectRequestedIDs(String[] expectedIDs) {
         mExpectedProductListIds = expectedIDs;
     }
 

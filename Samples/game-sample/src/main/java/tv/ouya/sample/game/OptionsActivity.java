@@ -43,22 +43,11 @@ public class OptionsActivity extends OuyaActivity {
 
     private static final String LOG_TAG = "OptionsActivity";
 
-    /**
-     * The application key. This is used to decrypt encrypted receipt responses. This should be replaced with the
-     * application key obtained from the OUYA developers website.
-     */
-
-    private static byte[] applicationKey;
-
 
     private Map<Options.Level, RadioButton> levelToRadioButton;
     private Map<RadioButton, Options.Level> radioButtonToLevel;
 
     static private final String PREV_SELECTED_LEVEL_KEY = "last_selected_level";
-
-    private static final String DEVELOPER_ID = "310a8f51-4d6e-4ae5-bda0-b93878e5f5d0";
-
-    private OuyaFacade mOuyaFacade;
 
     /**
      * The outstanding purchase request UUIDs mapped to the purchasable the request relates to.
@@ -78,15 +67,6 @@ public class OptionsActivity extends OuyaActivity {
         levelToRadioButton.put(ALLEYWAY, ((RadioButton) findViewById(R.id.radio_alleyway)));
         levelToRadioButton.put(BOXY, ((RadioButton) findViewById(R.id.radio_boxy)));
 
-        try {
-            InputStream inputStream = getResources().openRawResource(R.raw.key);
-            applicationKey = new byte[inputStream.available()];
-            inputStream.read(applicationKey);
-            inputStream.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
         // Create a reverse map
         radioButtonToLevel = new HashMap<RadioButton, Options.Level>();
         for(Options.Level level : levelToRadioButton.keySet()) {
@@ -97,14 +77,8 @@ public class OptionsActivity extends OuyaActivity {
         processReceipts(null);
         toggleProgressIndicator(true);
 
-        mOuyaFacade = OuyaFacade.getInstance();
 
-        Bundle developerInfo = new Bundle();
-        developerInfo.putString(OuyaFacade.OUYA_DEVELOPER_ID, DEVELOPER_ID);
-        developerInfo.putByteArray(OuyaFacade.OUYA_DEVELOPER_PUBLIC_KEY, applicationKey);
-        mOuyaFacade.init(this, developerInfo);
-
-        String prevSelectedLevel = mOuyaFacade.getGameData(PREV_SELECTED_LEVEL_KEY);
+        String prevSelectedLevel = OuyaFacade.getInstance().getGameData(PREV_SELECTED_LEVEL_KEY);
         if (prevSelectedLevel != null) {
             Options.Level prevLevel = Options.Level.valueOf(prevSelectedLevel);
             Options.getInstance().setLevel(prevLevel);
@@ -127,18 +101,12 @@ public class OptionsActivity extends OuyaActivity {
         requestReceipts();
     }
 
-    @Override
-    protected void onDestroy() {
-        mOuyaFacade.shutdown();
-        super.onDestroy();
-    }
-
     private void requestReceipts() {
         if (!OuyaFacade.isRunningOnOUYASupportedHardware(this)) {
             Toast.makeText(this, "You're not running on supported hardware!", Toast.LENGTH_SHORT).show();
         }
 
-        mOuyaFacade.requestReceipts(this, new OuyaResponseListener<Collection<Receipt>>() {
+        OuyaFacade.getInstance().requestReceipts(this, new OuyaResponseListener<Collection<Receipt>>() {
             @Override
             public void onSuccess(Collection<Receipt> receipts) {
                 processReceipts(receipts);
@@ -225,14 +193,14 @@ public class OptionsActivity extends OuyaActivity {
             mOutstandingPurchaseRequests.put(orderId, productId);
         }
 
-        mOuyaFacade.requestPurchase(this, purchasable, new OuyaResponseListener<PurchaseResult>() {
+        OuyaFacade.getInstance().requestPurchase(this, purchasable, new OuyaResponseListener<PurchaseResult>() {
             @Override
             public void onSuccess(PurchaseResult result) {
                 String responseProductId;
                 synchronized (mOutstandingPurchaseRequests) {
                     responseProductId = mOutstandingPurchaseRequests.remove(result.getOrderId());
                 }
-                if(responseProductId == null || !responseProductId.equals(productId)) {
+                if (responseProductId == null || !responseProductId.equals(productId)) {
                     onFailure(OuyaErrorCodes.THROW_DURING_ON_SUCCESS, "Purchased product is not the same as purchase request product", Bundle.EMPTY);
                     return;
                 }
@@ -278,6 +246,6 @@ public class OptionsActivity extends OuyaActivity {
 
     private void selectLevel(Options.Level level) {
         getInstance().setLevel(level);
-        mOuyaFacade.putGameData(PREV_SELECTED_LEVEL_KEY, level.toString());
+        OuyaFacade.getInstance().putGameData(PREV_SELECTED_LEVEL_KEY, level.toString());
     }
 }

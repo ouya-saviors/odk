@@ -20,4 +20,5 @@
     <string name="ok">OK</string>
     <string name="alert_title">IAP Sample App</string>
     <string name="userinfo">Username: %1$s\nUUID: %2$s</string>
+    <string name="charge_warning">Note: you will be charged for any purchases you make from within this sample!</string>
 </resources>

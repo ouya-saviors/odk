@@ -1,6 +1,12 @@
+ODK 2.0.2 - February 3, 2014
+=======================
+- Fix some potential NPEs in the CommunityContent code
+- Add "you will be charged" warning to IAP Sample App
+- OuyaInputMapper now sets the "source" on remapped key/motion events
+
 ODK 2.0.1 - December 16, 2014
 =======================
- - Add sample app for Community Content (Samples/cc-sample)
+- Add sample app for Community Content (Samples/cc-sample)
 
 ODK 2.0.0 - October 15, 2014
 =======================

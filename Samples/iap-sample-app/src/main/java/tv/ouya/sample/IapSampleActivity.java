@@ -34,6 +34,7 @@ import org.json.JSONException;
 import tv.ouya.console.api.*;
 
 import java.io.UnsupportedEncodingException;
+import java.lang.String;
 import java.security.GeneralSecurityException;
 import java.util.*;
 
@@ -54,6 +55,11 @@ public class IapSampleActivity extends Activity {
      * The current value is just a sample developer account. You should change it.
      */
     public static final String DEVELOPER_ID = "310a8f51-4d6e-4ae5-bda0-b93878e5f5d0";
+
+    // Both of these values will be emailed to you by the OUYA team after you've been
+    // selected by the OUYA team
+    public static final String XIAOMI_APP_ID = "2882303761517238170";
+    public static final String XIAOMI_APP_KEY = "5571723882170";
 
     /**
      * The application key. This is used to decrypt encrypted receipt responses. This should be replaced with the
@@ -89,14 +95,16 @@ public class IapSampleActivity extends Activity {
      * you have defined those items, put their Product IDs in the List below.
      * <p/>
      * The Product IDs below are those in our developer account. You should change them.
+     * <p/>
+     * A String array of all possible product IDs.
      */
-    public static final List<Purchasable> PRODUCT_IDENTIFIER_LIST = Arrays.asList(
-        new Purchasable("long_sword"),
-        new Purchasable("sharp_axe"),
-        new Purchasable("awesome_sauce"),
-        new Purchasable("cat_facts"),
-        new Purchasable("__DECLINED__THIS_PURCHASE")
-    );
+    public static final String[] ALL_PRODUCT_IDENTIFIERS = new String[] {
+            "long_sword",
+            "sharp_axe",
+            "awesome_sauce",
+            "cat_facts",
+            "__DECLINED__THIS_PURCHASE"
+    };
 
     /**
      * The saved instance state key for products
@@ -162,8 +170,32 @@ public class IapSampleActivity extends Activity {
         developerInfo.putString(OuyaFacade.OUYA_DEVELOPER_ID, DEVELOPER_ID);
         developerInfo.putByteArray(OuyaFacade.OUYA_DEVELOPER_PUBLIC_KEY, APPLICATION_KEY);
 
+        developerInfo.putStringArray(OuyaFacade.OUYA_PRODUCT_ID_LIST, ALL_PRODUCT_IDENTIFIERS);
+
+        // "com.xiaomi.app_id"
+        developerInfo.putString(OuyaFacade.XIAOMI_APPLICATION_ID, XIAOMI_APP_ID);
+        // "com.xiaomi.app_key"
+        developerInfo.putString(OuyaFacade.XIAOMI_APPLICATION_KEY, XIAOMI_APP_KEY);
+
         ouyaFacade = OuyaFacade.getInstance();
         ouyaFacade.init(this, developerInfo);
+        ouyaFacade.registerInitCompletedListener(new CancelIgnoringOuyaResponseListener<Bundle>() {
+            @Override
+            public void onSuccess(Bundle bundle) {
+                // Request the product list if it could not be restored from the savedInstanceState Bundle
+                if(mProductList == null) {
+                    requestProducts();
+                }
+
+                // Request an up to date list of receipts for the user.
+                requestReceipts();
+            }
+
+            @Override
+            public void onFailure(int i, String s, Bundle bundle) {
+                Log.e(LOG_TAG, "Error initializing OuyaFacade: " + s);
+            }
+        });
 
         // Uncomment this line to test against the server using "fake" credits.
         // This will also switch over to a separate "test" purchase history.
@@ -207,11 +239,6 @@ public class IapSampleActivity extends Activity {
             }
         }
 
-        // Request the product list if it could not be restored from the savedInstanceState Bundle
-        if(mProductList == null) {
-            requestProducts();
-        }
-
         // Make sure the receipt ListView starts empty if the receipt list could not be restored
         // from the savedInstanceState Bundle.
         if(mReceiptList == null) {
@@ -226,9 +253,6 @@ public class IapSampleActivity extends Activity {
     @Override
     public void onStart() {
         super.onStart();
-
-        // Request an up to date list of receipts for the user.
-        requestReceipts();
     }
 
     @Override
@@ -328,9 +352,9 @@ public class IapSampleActivity extends Activity {
     /**
      * Get the list of products the user can purchase from the server.
      */
-    private synchronized void requestProducts() {
+    public synchronized void requestProducts() {
         Log.d(LOG_TAG, "Requesting products");
-        ouyaFacade.requestProductList(this, PRODUCT_IDENTIFIER_LIST, new CancelIgnoringOuyaResponseListener<List<Product>>() {
+        ouyaFacade.requestProductList(this, ALL_PRODUCT_IDENTIFIERS, new CancelIgnoringOuyaResponseListener<List<Product>>() {
             @Override
             public void onSuccess(final List<Product> products) {
                 mProductList = products;
@@ -458,7 +482,7 @@ public class IapSampleActivity extends Activity {
     public void requestPurchase(final Product product)
         throws GeneralSecurityException, UnsupportedEncodingException, JSONException {
 
-        Purchasable purchasable = new Purchasable(product.getIdentifier());
+        Purchasable purchasable = product.createPurchasable();
         String orderId = purchasable.getOrderId();
 
         synchronized (mOutstandingPurchaseRequests) {
@@ -483,13 +507,23 @@ public class IapSampleActivity extends Activity {
 
     public class RequestPurchaseClickListener implements View.OnClickListener {
         @Override
-        public void onClick(View v) {
-            try {
-                requestPurchase((Product) v.getTag());
-            } catch(Exception ex) {
-                Log.e(LOG_TAG, "Error requesting purchase", ex);
-                showError(ex.getMessage());
-            }
+        public void onClick(final View v) {
+            new AlertDialog.Builder(IapSampleActivity.this)
+                    .setTitle(getString(R.string.alert_title))
+                    .setMessage(getResources().getString(R.string.charge_warning))
+                    .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            try {
+                                requestPurchase((Product) v.getTag());
+                            } catch (Exception ex) {
+                                Log.e(LOG_TAG, "Error requesting purchase", ex);
+                                showError(ex.getMessage());
+                            }
+                        }
+                    })
+                    .setNegativeButton(R.string.cancel, null)
+                    .show();
         }
     }
 
@@ -598,11 +632,13 @@ public class IapSampleActivity extends Activity {
                 return;
             }
 
+            Toast.makeText(IapSampleActivity.this, "Purchase successful", Toast.LENGTH_LONG).show();
             requestReceipts();
         }
 
         @Override
         public void onFailure(int errorCode, String errorMessage, Bundle optionalData) {
+            Toast.makeText(IapSampleActivity.this, "Purchase failed (error " + errorCode + ": " + errorMessage + ")", Toast.LENGTH_LONG).show();
         }
 
         /*

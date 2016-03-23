@@ -7,13 +7,11 @@ buildscript {
         }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:0.7.+'
-        classpath 'com.squareup.gradle:gradle-android-test-plugin:0.9.1-SNAPSHOT'
+        classpath 'com.android.tools.build:gradle:1.0.0'
     }
 }
 
-apply plugin: 'android'
-apply plugin: 'android-test'
+apply plugin: 'com.android.application'
 
 repositories {
     mavenCentral()
@@ -21,7 +19,7 @@ repositories {
 
 android {
     compileSdkVersion 'android-16'
-    buildToolsVersion '19.0.1'
+    buildToolsVersion '21.1.2'
 
     sourceSets {
         main {
@@ -53,7 +51,7 @@ android {
         versionName '1.0'
         versionCode 1
 
-        packageName 'tv.ouya.sample'
+        applicationId 'tv.ouya.sample'
     }
 
     lintOptions {
@@ -69,6 +67,4 @@ android {
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
-
-    testCompile fileTree(dir: 'libs/test', include: ['*.jar'])
 }

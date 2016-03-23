@@ -148,6 +148,12 @@ public class EditEmblemActivity extends Activity implements AdapterView.OnItemCl
     private void saveEmblem() {
         if(mMod == null) {
             mMod = OuyaContent.getInstance().create();
+
+            if (mMod == null) {
+              Log.d(TAG, "Error creating emblem.");
+              Toast.makeText(EditEmblemActivity.this, "Unable to save, is this feature enabled?", Toast.LENGTH_SHORT).show();
+              return;
+            }
         }
 
         OutputStream os = null;

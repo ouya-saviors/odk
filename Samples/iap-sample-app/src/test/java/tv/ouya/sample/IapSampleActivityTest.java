@@ -33,6 +33,7 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.shadows.ShadowAlertDialog;
 import org.robolectric.shadows.ShadowToast;
 import org.robolectric.util.ActivityController;
+import tv.ouya.console.api.CancelIgnoringOuyaResponseListener;
 import tv.ouya.console.api.OuyaFacade;
 import tv.ouya.console.api.Product;
 import tv.ouya.console.api.Receipt;
@@ -46,6 +47,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 import java.util.TimeZone;
 
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -116,8 +118,9 @@ public class IapSampleActivityTest {
         Product product2 = new Product("SKU2", "green sock", 100, 1., "USD", 1., 0, "", "Sample Developer", Product.Type.ENTITLEMENT);
         Product product3 = new Product("SKU3", "blue sock", 100, 1., "USD", 1., 0, "", "Sample Developer", Product.Type.ENTITLEMENT);
         mOUYAFacade.addProducts(product1, product2, product3);
-        mOUYAFacade.expectRequestedIDs(IapSampleActivity.PRODUCT_IDENTIFIER_LIST);
+        mOUYAFacade.expectRequestedIDs(IapSampleActivity.ALL_PRODUCT_IDENTIFIERS);
         callOnCreateAndFindViews();
+        mActivity.requestProducts();
         mOUYAFacade.simulateProductListSuccessResponse();
 
         assertThat("green sock - $1.00").isEqualTo(getButton(1).getText().toString());
@@ -180,6 +183,7 @@ public class IapSampleActivityTest {
 
     @Test
     public void productListFailure_shouldShowToast() throws Exception {
+        mActivity.requestProducts();
         mOUYAFacade.simulateProductListFailure(5544, "SKU is bad", new Bundle());
         assertThat(ShadowToast.getTextOfLatestToast()).isEqualTo("Could not fetch product information (error 5544: SKU is bad)");
     }

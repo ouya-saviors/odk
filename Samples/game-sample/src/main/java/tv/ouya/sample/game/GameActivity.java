@@ -170,7 +170,7 @@ public class GameActivity extends OuyaActivity {
         }
 
         players[playerNum].init();
+
         return players[playerNum];
     }
-
 }
