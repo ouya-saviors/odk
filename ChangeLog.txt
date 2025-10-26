@@ -1,4 +1,8 @@
-ODK 2.0.2 - February 3, 2014
+ODK 2.1.0 - March 23, 2016
+=======================
+- Additional ForgeTV support
+
+ODK 2.0.2 - February 3, 2015
 =======================
 - Fix some potential NPEs in the CommunityContent code
 - Add "you will be charged" warning to IAP Sample App
@@ -92,13 +96,13 @@ ODK 1.0.5 - June 11, 2013
 -- Layout is changed to better highlight games and allow the user to more easily access them.
 -- Tile images now load in more quickly and have better caching.
 -- Improved performance and navigation.
--- Download progress is now shown on the tile for each game, making it easier to see progress.  OUYA supports 3 simultaneous downloads and will queue requested downloads above 3. 
+-- Download progress is now shown on the tile for each game, making it easier to see progress.  OUYA supports 3 simultaneous downloads and will queue requested downloads above 3.
 -- Genre sections launch user to a new window so many more games can be seen at a time.
 - Play category now loads more quickly and scrolls smoother for users with lots of games.
-- Games with available updates now have an icon in the top right corner of their tiles in both Play and Discover.  Users can download the update from the tile in Play, or from the Game Details screen. 
+- Games with available updates now have an icon in the top right corner of their tiles in both Play and Discover.  Users can download the update from the tile in Play, or from the Game Details screen.
 - Downloaded games now install automatically.  No more annoying default Android permissions screen!  No more 'Install' tiles in the Play menu! Working on world peace next.
 - Users can put their OUYA into sleep mode via the controller. Hit (Y) from the main menu to do so.  OUYAs in sleep mode can be woken up by turning on a controller or pressing the power button on top of the OUYA.
-- Android settings and Browser now respect TV safe zones.  And yup, part of the 'O' in OUYA is still supposed to be off screen on the Main Menu =) 
+- Android settings and Browser now respect TV safe zones.  And yup, part of the 'O' in OUYA is still supposed to be off screen on the Main Menu =)
 - Region Restrictions are now available for Developers.  You can restrict regions for your games through the Dev Portal.  Remember, you are choosing which regions to NOT show in.  Your games show in all regions by default.
 - Release Calendar is now available for developers.  Devs can choose to give a release date for their title that will show on ouya.tv for all users to see.  It'™s a great way to tell people to look out for your game!
 - Fixed issue that could cause input queuing in some games.
