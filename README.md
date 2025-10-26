@@ -2,6 +2,9 @@
 
 Collection of official software development kits for the OUYA gaming console.
 
+Binary files are attached to the releases on Github and
+archived at https://archive.org/details/ouya-odks
+
 ODK 2.0.2 is missing.
 
 Downloaded from:
